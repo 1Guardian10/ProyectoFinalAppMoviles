@@ -43,3 +43,4 @@ yarn-error.*
 #reglas
 .supabase_restaurantes_policies.sql
 .supabase_usuarios_policies.sql
+.a.txt
