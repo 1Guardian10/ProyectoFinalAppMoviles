@@ -7,7 +7,7 @@ interface OrderDetailsModalProps {
     onClose: () => void;
     onAccept: (orderId: number) => void;
     order: any;
-    details: any[]; // Array de productos del pedido
+    details: any[];
 }
 
 export default function OrderDetailsModal({ visible, onClose, onAccept, order, details }: OrderDetailsModalProps) {

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable, Alert } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { supabase } from '../supabase/supabase';
+import { showAlert } from '../utils/AlertNativa';
 
 export default function DrawerContent(props: DrawerContentComponentProps) {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -80,11 +81,13 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      props.navigation.navigate('Login');
-    } catch (err: any) {
-      Alert.alert('Error', err.message || 'No se pudo cerrar sesión');
+      await supabase.auth.signOut();
+      props.navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
+    } catch (err) {
+      showAlert('Error', 'No se pudo cerrar sesión');
     }
   };
 
@@ -129,7 +132,10 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
       {isDriver && (
         <>
           <Pressable onPress={() => props.navigation.navigate('DriverOrders')}>
-            <Text>Pedidos (Repartidor)</Text>
+            <Text>Pedidos Disponibles</Text>
+          </Pressable>
+          <Pressable onPress={() => props.navigation.navigate('DriverActiveOrders')}>
+            <Text>Mis Pedidos (Activos)</Text>
           </Pressable>
         </>
       )}

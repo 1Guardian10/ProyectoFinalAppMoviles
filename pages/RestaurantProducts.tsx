@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Button, Alert, TouchableOpacity, Image, StyleSheet, Linking } from 'react-native';
+import { View, Text, FlatList, Button, TouchableOpacity, Image, StyleSheet, Linking } from 'react-native';
 import * as Location from 'expo-location';
 import { supabase } from '../supabase/supabase';
+import { showAlert } from '../utils/AlertNativa';
 export default function RestaurantProducts({ route, navigation }: any) {
   const { restaurantId, restaurantName } = route.params || {};
   const [products, setProducts] = useState<any[]>([]);
@@ -10,7 +11,7 @@ export default function RestaurantProducts({ route, navigation }: any) {
 
   const fetch = async () => {
     const { data, error } = await supabase.from('productos').select('*').eq('restaurante_id', restaurantId).order('id', { ascending: true });
-    if (error) return Alert.alert('Error', error.message);
+    if (error) return showAlert('Error', error.message);
     setProducts(data || []);
   };
 
@@ -33,19 +34,19 @@ export default function RestaurantProducts({ route, navigation }: any) {
   };
 
   const placeOrder = async () => {
-    if (!cart.length) return Alert.alert('Carrito vacío', 'Agrega productos antes de realizar el pedido');
+    if (!cart.length) return showAlert('Carrito vacío', 'Agrega productos antes de realizar el pedido');
 
     try {
       const userResp: any = await supabase.auth.getUser();
       const user = userResp?.data?.user;
-      if (!user) return Alert.alert('Autenticación', 'Debe iniciar sesión para realizar pedidos');
+      if (!user) return showAlert('Autenticación', 'Debe iniciar sesión para realizar pedidos');
 
       const total = cart.reduce((s, p) => s + (p.subtotal || 0), 0);
 
       const { data: pedidoData, error: pedidoErr } = await supabase.from('pedidos').insert({ cliente_id: user.id, restaurante_id: restaurantId, total, estado: 'pendiente' }).select('id').single();
       if (pedidoErr) {
         console.log('pedido insert error', pedidoErr);
-        return Alert.alert('Error', pedidoErr.message || JSON.stringify(pedidoErr));
+        return showAlert('Error', pedidoErr.message || JSON.stringify(pedidoErr));
       }
 
       const pedidoId = pedidoData.id;
@@ -54,7 +55,7 @@ export default function RestaurantProducts({ route, navigation }: any) {
       const { error: detalleErr } = await supabase.from('detalle_pedidos').insert(detalles);
       if (detalleErr) {
         console.log('detalle insert error', detalleErr);
-        return Alert.alert('Error', detalleErr.message || JSON.stringify(detalleErr));
+        return showAlert('Error', detalleErr.message || JSON.stringify(detalleErr));
       }
 
       // Intentar obtener ubicación actual y crear registro en entregas
@@ -70,11 +71,11 @@ export default function RestaurantProducts({ route, navigation }: any) {
           });
           if (entregaErr) {
             console.log('entrega insert error', entregaErr);
-            Alert.alert('Advertencia', 'Pedido creado pero no se pudo guardar la ubicación de entrega');
+            showAlert('Advertencia', 'Pedido creado pero no se pudo guardar la ubicación de entrega');
           }
         } else {
           // Permiso denegado: ofrecer abrir ajustes o continuar sin ubicación
-          Alert.alert(
+          showAlert(
             'Permiso de ubicación',
             'No se concedió el permiso de ubicación. ¿Deseas abrir los ajustes para activarlo?',
             [
@@ -87,11 +88,11 @@ export default function RestaurantProducts({ route, navigation }: any) {
         console.log('error creando entrega', e);
       }
 
-      Alert.alert('Pedido creado', `Pedido #${pedidoId} creado correctamente`);
+      showAlert('Pedido creado', `Pedido #${pedidoId} creado correctamente`);
       setCart([]);
       navigation.navigate('Home');
     } catch (e: any) {
-      Alert.alert('Error', e.message || String(e));
+      showAlert('Error', e.message || String(e));
     }
   };
 
@@ -99,15 +100,15 @@ export default function RestaurantProducts({ route, navigation }: any) {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status === 'granted') {
-        Alert.alert('Permiso concedido', 'Se podrá guardar la ubicación al realizar el pedido.');
+        showAlert('Permiso concedido', 'Se podrá guardar la ubicación al realizar el pedido.');
       } else {
-        Alert.alert('Permiso denegado', 'No se concedió el permiso. ¿Abrir ajustes?', [
+        showAlert('Permiso denegado', 'No se concedió el permiso. ¿Abrir ajustes?', [
           { text: 'Abrir ajustes', onPress: () => Linking.openSettings() },
           { text: 'Ok', style: 'cancel' },
         ]);
       }
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'No se pudo comprobar permisos');
+      showAlert('Error', e.message || 'No se pudo comprobar permisos');
     }
   };
 
@@ -152,8 +153,6 @@ export default function RestaurantProducts({ route, navigation }: any) {
           <Button title="Realizar pedido" onPress={placeOrder} />
         </View>
       </View>
-
-      {/* Eliminado el selector de mapa: la ubicación se obtiene en el momento del pedido */}
     </View>
   );
 }

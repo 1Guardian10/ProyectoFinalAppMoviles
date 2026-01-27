@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Button, Alert, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, Button, StyleSheet, ActivityIndicator } from 'react-native';
 import * as Location from 'expo-location';
 import { supabase } from '../supabase/supabase';
+import { showAlert } from '../utils/AlertNativa';
 
 import OrderDetailsModal from '../components/OrderDetailsModal';
 
@@ -27,7 +28,7 @@ export default function DriverOrders({ navigation }: any) {
       if (error) throw error;
       setOrders(data || []);
     } catch (e: any) {
-      Alert.alert('Error', e.message || String(e));
+      showAlert('Error', e.message || String(e));
     } finally {
       setLoading(false);
     }
@@ -41,7 +42,7 @@ export default function DriverOrders({ navigation }: any) {
     try {
       const userResp: any = await supabase.auth.getUser();
       const user = userResp?.data?.user;
-      if (!user) return Alert.alert('Autenticación', 'Debes iniciar sesión como repartidor');
+      if (!user) return showAlert('Autenticación', 'Debes iniciar sesión como repartidor');
 
       // Intentar asignar el pedido al repartidor actual
       const { data: updData, error: updErr } = await supabase
@@ -53,7 +54,7 @@ export default function DriverOrders({ navigation }: any) {
 
       if (updErr) {
         console.log('assign error', updErr);
-        return Alert.alert('Error', updErr.message || JSON.stringify(updErr));
+        return showAlert('Error', updErr.message || JSON.stringify(updErr));
       }
 
       // Comprobar si ya existe una entrada en entregas para este pedido
@@ -67,7 +68,7 @@ export default function DriverOrders({ navigation }: any) {
 
       if (!entregasData || entregasData.length === 0) {
         // No hay ubicación guardada: preguntar si usar la ubicación actual del dispositivo
-        Alert.alert(
+        showAlert(
           'Sin ubicación de entrega',
           'No existe una ubicación guardada para este pedido. ¿Deseas usar tu ubicación actual como punto de entrega?',
           [
@@ -76,12 +77,12 @@ export default function DriverOrders({ navigation }: any) {
           ]
         );
       } else {
-        Alert.alert('Pedido aceptado', `Pedido #${pedidoId} asignado correctamente`);
+        showAlert('Pedido aceptado', `Pedido #${pedidoId} asignado correctamente`);
         fetchAvailable();
         navigation.navigate('Home');
       }
     } catch (e: any) {
-      Alert.alert('Error', e.message || String(e));
+      showAlert('Error', e.message || String(e));
     }
   };
 
@@ -89,7 +90,7 @@ export default function DriverOrders({ navigation }: any) {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permiso de ubicación', 'Permiso denegado. ¿Abrir ajustes?', [
+        showAlert('Permiso de ubicación', 'Permiso denegado. ¿Abrir ajustes?', [
           { text: 'Abrir ajustes', onPress: () => Location.getProviderStatusAsync().then(() => { }) },
           { text: 'Cancelar', style: 'cancel' },
         ]);
@@ -106,14 +107,14 @@ export default function DriverOrders({ navigation }: any) {
 
       if (insertErr) {
         console.log('entrega insert err', insertErr);
-        return Alert.alert('Error', insertErr.message || JSON.stringify(insertErr));
+        return showAlert('Error', insertErr.message || JSON.stringify(insertErr));
       }
 
-      Alert.alert('Listo', 'Ubicación guardada y pedido aceptado');
+      showAlert('Listo', 'Ubicación guardada y pedido aceptado');
       fetchAvailable();
       navigation.navigate('Home');
     } catch (e: any) {
-      Alert.alert('Error', e.message || String(e));
+      showAlert('Error', e.message || String(e));
     }
   };
 

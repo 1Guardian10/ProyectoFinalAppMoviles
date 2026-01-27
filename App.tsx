@@ -19,6 +19,7 @@ import AdminUsuarios from './pages/AdminUsuarios';
 import Restaurantes from './pages/Restaurantes';
 import RestaurantProducts from './pages/RestaurantProducts';
 import DriverOrders from './pages/DriverOrders';
+import DriverActiveOrders from './pages/DriverActiveOrders';
 
 
 const Stack = createNativeStackNavigator();
@@ -26,7 +27,7 @@ const Drawer = createDrawerNavigator();
 
 function MainDrawer() {
   return (
-      <Drawer.Navigator
+    <Drawer.Navigator
       initialRouteName="Home"
       screenOptions={{ headerShown: true }}
       drawerContent={(props) => <DrawerContent {...props} />}
@@ -39,22 +40,23 @@ function MainDrawer() {
       <Drawer.Screen name="AdminUsuarios" component={AdminUsuarios} options={{ title: 'Usuarios' }} />
       <Drawer.Screen name="RestaurantesCliente" component={Restaurantes} options={{ title: 'Restaurantes' }} />
       <Drawer.Screen name="RestaurantProducts" component={RestaurantProducts} options={{ title: 'Productos del restaurante' }} />
-      <Drawer.Screen name="DriverOrders" component={DriverOrders} options={{ title: 'Pedidos (Repartidor)' }} />
+      <Drawer.Screen name="DriverOrders" component={DriverOrders} options={{ title: 'Pedidos Disponibles' }} />
+      <Drawer.Screen name="DriverActiveOrders" component={DriverActiveOrders} options={{ title: 'Mis Pedidos (Activos)' }} />
     </Drawer.Navigator>
   );
 }
-  export default function App() {
-    return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaProvider>
-          <NavigationContainer>
-            <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="Login" component={Login} />
-              <Stack.Screen name="Register" component={Register} />
-              <Stack.Screen name="Main" component={MainDrawer} />
-            </Stack.Navigator>
-          </NavigationContainer>
-        </SafeAreaProvider>
-      </GestureHandlerRootView>
-    );
-  }
+export default function App() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Login" component={Login} />
+            <Stack.Screen name="Register" component={Register} />
+            <Stack.Screen name="Main" component={MainDrawer} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
+}

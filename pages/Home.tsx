@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import { supabase } from '../supabase/supabase';
 
 export default function Home({ navigation }: any) {
   return (

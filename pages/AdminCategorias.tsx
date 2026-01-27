@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TextInput, Button, Alert } from 'react-native';
+import { View, Text, FlatList, TextInput, Button } from 'react-native';
 import { supabase } from '../supabase/supabase';
+import { showAlert } from '../utils/AlertNativa';
 
 export default function AdminCategorias() {
   const [items, setItems] = useState<any[]>([]);
@@ -8,7 +9,7 @@ export default function AdminCategorias() {
 
   const fetchItems = async () => {
     const { data, error } = await supabase.from('categorias').select('*');
-    if (error) return Alert.alert('Error', error.message);
+    if (error) return showAlert('Error', error.message);
     setItems(data || []);
   };
 
@@ -17,9 +18,9 @@ export default function AdminCategorias() {
   }, []);
 
   const handleAdd = async () => {
-    if (!nombre.trim()) return Alert.alert('Validación', 'Nombre requerido');
+    if (!nombre.trim()) return showAlert('Validación', 'Nombre requerido');
     const { error } = await supabase.from('categorias').insert({ nombre: nombre.trim() });
-    if (error) return Alert.alert('Error', error.message);
+    if (error) return showAlert('Error', error.message);
     setNombre('');
     fetchItems();
   };

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TextInput, Button, Alert, Switch } from 'react-native';
+import { View, Text, FlatList, TextInput, Button, Switch } from 'react-native';
 import { supabase } from '../supabase/supabase';
+import { showAlert } from '../utils/AlertNativa';
 
 export default function AdminRestaurantes() {
   const [items, setItems] = useState<any[]>([]);
@@ -11,7 +12,7 @@ export default function AdminRestaurantes() {
 
   const fetchItems = async () => {
     const { data, error } = await supabase.from('restaurantes').select('*');
-    if (error) return Alert.alert('Error', error.message);
+    if (error) return showAlert('Error', error.message);
     setItems(data || []);
   };
 
@@ -20,11 +21,11 @@ export default function AdminRestaurantes() {
   }, []);
 
   const handleAdd = async () => {
-    if (!nombre.trim()) return Alert.alert('Validación', 'Nombre requerido');
+    if (!nombre.trim()) return showAlert('Validación', 'Nombre requerido');
     try {
       const userResp: any = await supabase.auth.getUser();
       const user = userResp?.data?.user;
-      if (!user) return Alert.alert('Autenticación', 'Debe iniciar sesión para crear un restaurante');
+      if (!user) return showAlert('Autenticación', 'Debe iniciar sesión para crear un restaurante');
 
       const resp = await supabase.from('restaurantes').insert({
         nombre: nombre.trim(),
@@ -36,11 +37,11 @@ export default function AdminRestaurantes() {
       const { error } = resp;
       console.log('Insert restaurantes response:', resp);
       if (error) {
-        Alert.alert('Error', error.message || JSON.stringify(error));
+        showAlert('Error', error.message || JSON.stringify(error));
         return;
       }
     } catch (err: any) {
-      Alert.alert('Error', err?.message || String(err));
+      showAlert('Error', err?.message || String(err));
       return;
     }
     setNombre('');

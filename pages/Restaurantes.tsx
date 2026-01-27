@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Button, Alert } from 'react-native';
+import { View, Text, FlatList, Button } from 'react-native';
 import { supabase } from '../supabase/supabase';
+import { showAlert } from '../utils/AlertNativa';
 
 export default function Restaurantes({ navigation }: any) {
   const [items, setItems] = useState<any[]>([]);
 
   const fetch = async () => {
     const { data, error } = await supabase.from('restaurantes').select('*');
-    if (error) return Alert.alert('Error', error.message);
+    if (error) return showAlert('Error', error.message);
     setItems(data || []);
   };
 

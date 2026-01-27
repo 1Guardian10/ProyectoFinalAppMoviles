@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TextInput, Button, Alert, Switch, Image, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TextInput, Button, Switch, Image, ActivityIndicator } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadImageAsync } from '../utils/Storage';
 import { supabase } from '../supabase/supabase';
+import { showAlert } from '../utils/AlertNativa';
 
 export default function AdminProductos() {
   const [items, setItems] = useState<any[]>([]);
@@ -20,7 +21,7 @@ export default function AdminProductos() {
 
   const fetchItems = async () => {
     const { data, error } = await supabase.from('productos').select('*');
-    if (error) return Alert.alert('Error', error.message);
+    if (error) return showAlert('Error', error.message);
     setItems(data || []);
   };
 
@@ -32,19 +33,19 @@ export default function AdminProductos() {
 
   const fetchRestaurants = async () => {
     const { data, error } = await supabase.from('restaurantes').select('id,nombre');
-    if (error) return Alert.alert('Error', error.message);
+    if (error) return showAlert('Error', error.message);
     setRestaurants(data || []);
   };
 
   const fetchCategories = async () => {
     const { data, error } = await supabase.from('categorias').select('id,nombre');
-    if (error) return Alert.alert('Error', error.message);
+    if (error) return showAlert('Error', error.message);
     setCategories(data || []);
   };
 
   const handleAdd = async () => {
-    if (!nombre.trim()) return Alert.alert('Validación', 'Nombre requerido');
-    if (!selectedRestaurant) return Alert.alert('Validación', 'Selecciona un restaurante');
+    if (!nombre.trim()) return showAlert('Validación', 'Nombre requerido');
+    if (!selectedRestaurant) return showAlert('Validación', 'Selecciona un restaurante');
     const parsed = parseFloat(precio);
     const insertObj = {
       nombre: nombre.trim(),
@@ -57,7 +58,7 @@ export default function AdminProductos() {
     };
 
     const { error } = await supabase.from('productos').insert(insertObj);
-    if (error) return Alert.alert('Error', error.message);
+    if (error) return showAlert('Error', error.message);
     setNombre('');
     setPrecio('');
     setDescripcion('');
@@ -70,7 +71,7 @@ export default function AdminProductos() {
   const pickImage = async () => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') return Alert.alert('Permiso denegado', 'Se requieren permisos para acceder a la galería');
+      if (status !== 'granted') return showAlert('Permiso denegado', 'Se requieren permisos para acceder a la galería');
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -87,17 +88,17 @@ export default function AdminProductos() {
         const publicUrl = await uploadImageAsync(uri, 'imagenes_productos');
         if (publicUrl) {
           setImagenUrl(publicUrl);
-          Alert.alert('Éxito', 'Imagen subida correctamente');
+          showAlert('Éxito', 'Imagen subida correctamente');
         } else {
-          Alert.alert('Error', 'No se obtuvo URL pública');
+          showAlert('Error', 'No se obtuvo URL pública');
         }
       } catch (err: any) {
-        Alert.alert('Error', err.message || 'Error subiendo la imagen');
+        showAlert('Error', err.message || 'Error subiendo la imagen');
       } finally {
         setIsUploading(false);
       }
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'Error al seleccionar la imagen');
+      showAlert('Error', err.message || 'Error al seleccionar la imagen');
     }
   };
 

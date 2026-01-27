@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { supabase } from '../supabase/supabase';
+import { showAlert } from '../utils/AlertNativa';
 
 export default function AdminUsuarios() {
   const [users, setUsers] = useState<any[]>([]);
@@ -17,7 +18,7 @@ export default function AdminUsuarios() {
       setUsers(uData || []);
       setRoles(rData || []);
     } catch (e: any) {
-      Alert.alert('Error', e.message || JSON.stringify(e));
+      showAlert('Error', e.message || JSON.stringify(e));
     } finally {
       setLoading(false);
     }
@@ -30,13 +31,11 @@ export default function AdminUsuarios() {
   const changeRole = async (userId: string, rolId: number) => {
     try {
       const resp = await supabase.from('usuarios').update({ rol_id: rolId }).eq('id', userId);
-      console.log('Update usuarios response:', resp);
       const { error } = resp;
-      if (error) return Alert.alert('Error', error.message || JSON.stringify(error));
-      // actualizar localmente
+      if (error) return showAlert('Error', error.message || JSON.stringify(error));
       setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, rol_id: rolId } : u)));
     } catch (e: any) {
-      Alert.alert('Error', e.message || String(e));
+      showAlert('Error', e.message || String(e));
     }
   };
 
