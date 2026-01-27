@@ -2,6 +2,7 @@ import 'react-native-gesture-handler';
 import 'react-native-url-polyfill/auto';
 import "./global.css";
 import React from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
@@ -46,11 +47,38 @@ function MainDrawer() {
   );
 }
 export default function App() {
+  const [initialRoute, setInitialRoute] = React.useState('Login');
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function checkSession() {
+      try {
+        const { data } = await import('./supabase/supabase').then(m => m.supabase.auth.getSession());
+        if (data.session) {
+          setInitialRoute('Main');
+        }
+      } catch (e) {
+        // En caso de error, default a Login
+      } finally {
+        setLoading(false);
+      }
+    }
+    checkSession();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <NavigationContainer>
-          <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
+          <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Login" component={Login} />
             <Stack.Screen name="Register" component={Register} />
             <Stack.Screen name="Main" component={MainDrawer} />

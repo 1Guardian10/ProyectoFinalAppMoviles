@@ -104,69 +104,85 @@ export default function AdminProductos() {
 
   return (
     <View style={{ flex: 1, padding: 12 }}>
-      <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>Productos</Text>
-
-      <TextInput
-        placeholder="Nombre"
-        value={nombre}
-        onChangeText={setNombre}
-        style={{ borderWidth: 1, padding: 8, marginBottom: 8 }}
-      />
-      <TextInput
-        placeholder="Precio"
-        value={precio}
-        onChangeText={setPrecio}
-        keyboardType="numeric"
-        style={{ borderWidth: 1, padding: 8, marginBottom: 8 }}
-      />
-      <TextInput
-        placeholder="Descripción"
-        value={descripcion}
-        onChangeText={setDescripcion}
-        style={{ borderWidth: 1, padding: 8, marginBottom: 8 }}
-      />
-      <TextInput
-        placeholder="Imagen URL"
-        value={imagenUrl}
-        onChangeText={setImagenUrl}
-        style={{ borderWidth: 1, padding: 8, marginBottom: 8 }}
-      />
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-        <Text style={{ marginRight: 8 }}>Disponible</Text>
-        <Switch value={disponible} onValueChange={setDisponible} />
-      </View>
-      <Text style={{ marginBottom: 4 }}>Restaurante</Text>
-      <View style={{ borderWidth: 1, marginBottom: 8 }}>
-        <Picker
-          selectedValue={selectedRestaurant}
-          onValueChange={(value) => setSelectedRestaurant(value)}
-        >
-          <Picker.Item label="-- Selecciona restaurante --" value={null} />
-          {restaurants.map((r) => (
-            <Picker.Item key={r.id} label={r.nombre} value={r.id} />
-          ))}
-        </Picker>
-      </View>
-      <Text style={{ marginBottom: 4 }}>Categoría</Text>
-      <View style={{ borderWidth: 1, marginBottom: 8 }}>
-        <Picker
-          selectedValue={selectedCategory}
-          onValueChange={(value) => setSelectedCategory(value)}
-        >
-          <Picker.Item label="-- Selecciona categoría --" value={null} />
-          {categories.map((c) => (
-            <Picker.Item key={c.id} label={c.nombre} value={c.id} />
-          ))}
-        </Picker>
-      </View>
-      <Button title="Agregar" onPress={handleAdd} />
-
       <FlatList
         data={items}
         keyExtractor={(item) => item.id.toString()}
+        ListHeaderComponent={
+          <View>
+            <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>Productos</Text>
+
+            <TextInput
+              placeholder="Nombre"
+              value={nombre}
+              onChangeText={setNombre}
+              style={{ borderWidth: 1, padding: 8, marginBottom: 8 }}
+            />
+            <TextInput
+              placeholder="Precio"
+              value={precio}
+              onChangeText={setPrecio}
+              keyboardType="numeric"
+              style={{ borderWidth: 1, padding: 8, marginBottom: 8 }}
+            />
+            <TextInput
+              placeholder="Descripción"
+              value={descripcion}
+              onChangeText={setDescripcion}
+              style={{ borderWidth: 1, padding: 8, marginBottom: 8 }}
+            />
+            <View style={{ marginBottom: 8 }}>
+              <Text style={{ marginBottom: 4 }}>Imagen</Text>
+              <Button
+                title={isUploading ? "Subiendo..." : "Seleccionar Imagen"}
+                onPress={pickImage}
+                disabled={isUploading}
+              />
+              {isUploading && <ActivityIndicator style={{ marginTop: 8 }} />}
+              {Boolean(imagenUrl) && (
+                <Image
+                  source={{ uri: imagenUrl }}
+                  style={{ width: '100%', height: 200, marginTop: 8, borderRadius: 8, resizeMode: 'cover' }}
+                />
+              )}
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <Text style={{ marginRight: 8 }}>Disponible</Text>
+              <Switch value={disponible} onValueChange={setDisponible} />
+            </View>
+            <Text style={{ marginBottom: 4 }}>Restaurante</Text>
+            <View style={{ borderWidth: 1, marginBottom: 8 }}>
+              <Picker
+                selectedValue={selectedRestaurant}
+                onValueChange={(value) => setSelectedRestaurant(value)}
+              >
+                <Picker.Item label="-- Selecciona restaurante --" value={null} />
+                {restaurants.map((r) => (
+                  <Picker.Item key={r.id} label={r.nombre} value={r.id} />
+                ))}
+              </Picker>
+            </View>
+            <Text style={{ marginBottom: 4 }}>Categoría</Text>
+            <View style={{ borderWidth: 1, marginBottom: 8 }}>
+              <Picker
+                selectedValue={selectedCategory}
+                onValueChange={(value) => setSelectedCategory(value)}
+              >
+                <Picker.Item label="-- Selecciona categoría --" value={null} />
+                {categories.map((c) => (
+                  <Picker.Item key={c.id} label={c.nombre} value={c.id} />
+                ))}
+              </Picker>
+            </View>
+            <Button title="Agregar" onPress={handleAdd} />
+            <View style={{ height: 16 }} />
+          </View>
+        }
         renderItem={({ item }) => (
-          <View style={{ paddingVertical: 8 }}>
-            <Text>{item.nombre} - {item.precio}</Text>
+          <View style={{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#eee' }}>
+            <Text style={{ fontWeight: 'bold' }}>{item.nombre} - {item.precio}</Text>
+            {item.imagen_url && (
+              <Image source={{ uri: item.imagen_url }} style={{ width: 50, height: 50, marginTop: 4 }} />
+            )}
           </View>
         )}
       />

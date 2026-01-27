@@ -5,14 +5,14 @@ import {
   TextInput,
   Pressable,
   ScrollView,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert
+  Alert,
+  Dimensions,
 } from 'react-native';
 import { signUpWithEmail } from '../utils/Auth';
-import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowLeft, CheckCircle } from 'lucide-react-native';
+import { Eye, EyeOff, Mail, Lock, User, Shield, ArrowLeft, CheckCircle } from 'lucide-react-native';
 
 export default function Register({ navigation }: any) {
   const [email, setEmail] = useState('');
@@ -30,6 +30,8 @@ export default function Register({ navigation }: any) {
     confirmPassword: '',
     phone: ''
   });
+  const { width, height } = Dimensions.get('window');
+  const isSmallScreen = width < 375;
 
   const validateField = (field: string, value: string) => {
     const newErrors = { ...errors };
@@ -211,272 +213,209 @@ export default function Register({ navigation }: any) {
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       className="flex-1 bg-gradient-to-b from-blue-50 to-white"
+      style={{ backgroundColor: '#f8fafc' }}
     >
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        bounces={false}
       >
-        {/* Header con gradiente */}
-        <View className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 h-72 rounded-b-[50px] px-6 pt-16 shadow-xl shadow-blue-900/30">
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            className="absolute top-16 left-6 z-10 bg-white/20 p-3 rounded-full active:bg-white/30"
-            activeOpacity={0.7}
+        {/* HEADER MEJORADO PARA MÓVIL */}
+        <View className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 h-64 rounded-b-[50px] px-5 pt-12 relative overflow-hidden">
+          {/* Elementos decorativos */}
+          <View className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-blue-500/20" />
+          <View className="absolute top-20 -left-10 w-32 h-32 rounded-full bg-blue-400/15" />
+
+          <Pressable
+            onPress={() => navigation.replace('Login')}
+            className="absolute top-12 left-5 bg-white/30 p-3 rounded-full active:bg-white/40"
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            style={{
+              zIndex: 50,
+              elevation: 50,
+            }}
           >
             <ArrowLeft size={24} color="white" />
-          </TouchableOpacity>
+          </Pressable>
 
-          <View className="flex-1 justify-center items-center mt-8">
-            <View className="bg-white/20 p-4 rounded-2xl mb-4">
-              <User size={40} color="white" />
+          <View className="flex-1 justify-center items-center pt-8">
+            <View className="relative">
+              <View className="p-5 rounded-2xl bg-white/25 backdrop-blur-sm border border-white/30">
+                <User size={isSmallScreen ? 32 : 36} color="#2563EB" />
+              </View>
+              <View className="absolute -bottom-2 -right-2 bg-white p-2 rounded-full border-2 border-blue-600">
+                <Shield size={16} color="#2563EB" />
+              </View>
             </View>
-            <Text className="text-white text-3xl font-bold text-center mb-8">
-              Crear Cuenta Nueva
+
+            <Text className="text-3xl font-bold text-[#2563EB] mt-6 text-center">
+              Crear Cuenta
             </Text>
-            <Text className="text-blue-100 text-base mt-3 text-center px-8 leading-6">
-              Únete para gestionar tu local de manera profesional y eficiente
+            <Text className="text-blue-100/90 mt-2 text-center text-base max-w-xs">
+              Regístrate para comenzar tu experiencia
             </Text>
           </View>
         </View>
 
-        {/* Formulario */}
-        <View className="flex-1 px-6 -mt-16 pb-10">
-          <View className="bg-white rounded-3xl p-8 shadow-2xl shadow-blue-900/20 border border-blue-100">
+        {/* FORM MEJORADO PARA MÓVIL */}
+        <View className="flex-1 px-5 -mt-8">
+          <View className="bg-white rounded-[30px] p-6 shadow-2xl shadow-blue-900/10 border border-blue-100">
+            {/* Indicador de pasos (opcional para UX) */}
+            <View className="flex-row justify-center mb-6">
+              <View className="w-8 h-1 rounded-full bg-blue-600 mr-1" />
+              <View className="w-8 h-1 rounded-full bg-blue-300 mr-1" />
+              <View className="w-8 h-1 rounded-full bg-blue-300" />
+            </View>
 
-            {/* Campo Nombre */}
+            {/* Nombre */}
             <View className="mb-6">
-              <View className="flex-row justify-between items-center mb-2">
-                <Text className="text-blue-900 font-bold text-base ml-1">
+              <View className="flex-row items-center mb-2">
+                <View className="w-6 h-6 rounded-full bg-blue-100 items-center justify-center mr-2">
+                  <Text className="text-blue-600 font-bold text-xs">1</Text>
+                </View>
+                <Text className="text-blue-900 font-bold text-base">
                   Nombre completo
                 </Text>
-                {errors.name ? (
-                  <Text className="text-red-500 text-xs font-medium">
-                    {errors.name}
-                  </Text>
-                ) : null}
               </View>
-              <View className={`flex-row items-center rounded-2xl px-4 py-4 border-2 ${errors.name ? 'border-red-300 bg-red-50' : 'border-blue-200 bg-blue-50'
-                }`}>
-                <User size={22} color={errors.name ? "#ef4444" : "#2563EB"} className="mr-3" />
+              <View className="flex-row items-center rounded-2xl px-4 py-4 border-2 border-blue-200 bg-white">
+                <User size={22} color="#2563EB" />
                 <TextInput
-                  placeholder="Ingresa tu nombre completo"
+                  placeholder="Tu nombre"
                   value={name}
-                  onChangeText={(text) => {
-                    setName(text);
-                    validateField('name', text);
-                  }}
-                  className="flex-1 text-blue-900 text-base"
+                  onChangeText={setName}
+                  className="flex-1 ml-3 text-blue-900 text-base"
                   placeholderTextColor="#93C5FD"
-                  autoCapitalize="words"
-                  onBlur={() => validateField('name', name)}
-                  editable={!isLoading}
+                  selectionColor="#3B82F6"
+                  autoComplete="name"
                 />
               </View>
             </View>
 
-            {/* Campo Teléfono */}
+            {/* Email */}
             <View className="mb-6">
-              <View className="flex-row justify-between items-center mb-2">
-                <Text className="text-blue-900 font-bold text-base ml-1">
-                  Teléfono
-                </Text>
-                {errors.phone ? (
-                  <Text className="text-red-500 text-xs font-medium">
-                    {errors.phone}
-                  </Text>
-                ) : null}
-              </View>
-              <View className={`flex-row items-center rounded-2xl px-4 py-4 border-2 ${errors.phone ? 'border-red-300 bg-red-50' : 'border-blue-200 bg-blue-50'
-                }`}>
-                <Phone size={22} color={errors.phone ? "#ef4444" : "#2563EB"} className="mr-3" />
-                <TextInput
-                  placeholder="Ej: +51 987654321"
-                  value={phone}
-                  onChangeText={(text) => {
-                    setPhone(text);
-                    validateField('phone', text);
-                  }}
-                  keyboardType="phone-pad"
-                  className="flex-1 text-blue-900 text-base"
-                  placeholderTextColor="#93C5FD"
-                  onBlur={() => validateField('phone', phone)}
-                  editable={!isLoading}
-                />
-              </View>
-            </View>
-
-            {/* Campo Email */}
-            <View className="mb-6">
-              <View className="flex-row justify-between items-center mb-2">
-                <Text className="text-blue-900 font-bold text-base ml-1">
+              <View className="flex-row items-center mb-2">
+                <View className="w-6 h-6 rounded-full bg-blue-100 items-center justify-center mr-2">
+                  <Text className="text-blue-600 font-bold text-xs">2</Text>
+                </View>
+                <Text className="text-blue-900 font-bold text-base">
                   Correo electrónico
                 </Text>
-                {errors.email ? (
-                  <Text className="text-red-500 text-xs font-medium">
-                    {errors.email}
-                  </Text>
-                ) : null}
               </View>
-              <View className={`flex-row items-center rounded-2xl px-4 py-4 border-2 ${errors.email ? 'border-red-300 bg-red-50' : 'border-blue-200 bg-blue-50'
-                }`}>
-                <Mail size={22} color={errors.email ? "#ef4444" : "#2563EB"} className="mr-3" />
+              <View className="flex-row items-center rounded-2xl px-4 py-4 border-2 border-blue-200 bg-white">
+                <Mail size={22} color="#2563EB" />
                 <TextInput
-                  placeholder="ejemplo@empresa.com"
+                  placeholder="ejemplo@gmail.com"
                   value={email}
-                  onChangeText={(text) => {
-                    setEmail(text);
-                    validateField('email', text);
-                  }}
+                  onChangeText={setEmail}
                   autoCapitalize="none"
                   keyboardType="email-address"
-                  className="flex-1 text-blue-900 text-base"
+                  className="flex-1 ml-3 text-blue-900 text-base"
                   placeholderTextColor="#93C5FD"
-                  onBlur={() => validateField('email', email)}
-                  editable={!isLoading}
+                  selectionColor="#3B82F6"
+                  autoComplete="email"
                 />
               </View>
             </View>
 
-            {/* Campo Contraseña */}
-            <View className="mb-6">
-              <View className="flex-row justify-between items-center mb-2">
-                <View className="flex-row items-center">
-                  <Text className="text-blue-900 font-bold text-base ml-1">
-                    Contraseña
-                  </Text>
-                  <TouchableOpacity
-                    onPress={showPasswordRequirements}
-                    className="ml-2"
-                    disabled={isLoading}
-                  >
-                    <Text className="text-blue-500 text-xs">Requisitos</Text>
-                  </TouchableOpacity>
-                </View>
-                {errors.password ? (
-                  <Text className="text-red-500 text-xs font-medium">
-                    {errors.password}
-                  </Text>
-                ) : null}
-              </View>
-              <View className={`flex-row items-center rounded-2xl px-4 py-4 border-2 ${errors.password ? 'border-red-300 bg-red-50' : 'border-blue-200 bg-blue-50'
-                }`}>
-                <Lock size={22} color={errors.password ? "#ef4444" : "#2563EB"} className="mr-3" />
-                <TextInput
-                  placeholder="Ingresa tu contraseña"
-                  value={password}
-                  onChangeText={(text) => {
-                    setPassword(text);
-                    validateField('password', text);
-                  }}
-                  secureTextEntry={!showPassword}
-                  className="flex-1 text-blue-900 text-base"
-                  placeholderTextColor="#93C5FD"
-                  onBlur={() => validateField('password', password)}
-                  editable={!isLoading}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  className="p-2"
-                  disabled={isLoading}
-                >
-                  {showPassword ? (
-                    <EyeOff size={22} color={errors.password ? "#ef4444" : "#64748b"} />
-                  ) : (
-                    <Eye size={22} color={errors.password ? "#ef4444" : "#64748b"} />
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Campo Confirmar Contraseña */}
+            {/* Password */}
             <View className="mb-8">
-              <View className="flex-row justify-between items-center mb-2">
-                <Text className="text-blue-900 font-bold text-base ml-1">
-                  Confirmar contraseña
+              <View className="flex-row items-center mb-2">
+                <View className="w-6 h-6 rounded-full bg-blue-100 items-center justify-center mr-2">
+                  <Text className="text-blue-600 font-bold text-xs">3</Text>
+                </View>
+                <Text className="text-blue-900 font-bold text-base">
+                  Contraseña
                 </Text>
-                {errors.confirmPassword ? (
-                  <Text className="text-red-500 text-xs font-medium">
-                    {errors.confirmPassword}
-                  </Text>
-                ) : null}
               </View>
-              <View className={`flex-row items-center rounded-2xl px-4 py-4 border-2 ${errors.confirmPassword ? 'border-red-300 bg-red-50' : 'border-blue-200 bg-blue-50'
-                }`}>
-                <Lock size={22} color={errors.confirmPassword ? "#ef4444" : "#2563EB"} className="mr-3" />
+
+              <View className="flex-row items-center rounded-2xl px-4 py-4 border-2 border-blue-200 bg-white">
+                <Lock size={22} color="#2563EB" />
+
                 <TextInput
-                  placeholder="Repite tu contraseña"
-                  value={confirmPassword}
-                  onChangeText={(text) => {
-                    setConfirmPassword(text);
-                    validateField('confirmPassword', text);
-                  }}
-                  secureTextEntry={!showConfirmPassword}
-                  className="flex-1 text-blue-900 text-base"
+                  placeholder="Mínimo 6 caracteres"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  className="flex-1 ml-3 text-blue-900 text-base"
                   placeholderTextColor="#93C5FD"
-                  onBlur={() => validateField('confirmPassword', confirmPassword)}
-                  editable={!isLoading}
+                  selectionColor="#3B82F6"
+                  autoComplete="password"
                 />
-                <TouchableOpacity
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="p-2"
-                  disabled={isLoading}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff size={22} color={errors.confirmPassword ? "#ef4444" : "#64748b"} />
+
+                <Pressable onPress={() => setShowPassword(!showPassword)}>
+                  {showPassword ? (
+                    <EyeOff size={22} color="#64748B" />
                   ) : (
-                    <Eye size={22} color={errors.confirmPassword ? "#ef4444" : "#64748b"} />
+                    <Eye size={22} color="#64748B" />
                   )}
-                </TouchableOpacity>
+                </Pressable>
               </View>
+
+              <Text className="text-blue-500 text-xs mt-2 ml-1">
+                ⓘ La contraseña debe tener al menos 6 caracteres
+              </Text>
             </View>
 
-            {/* Botón Registrar */}
+            {/* BOTÓN PRINCIPAL - AZUL SÓLIDO PARA MÓVIL */}
             <Pressable
               onPress={handleRegister}
               disabled={isLoading}
-              className={`bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl py-5 items-center shadow-lg shadow-blue-600/30 mb-6 ${isLoading ? 'opacity-80' : 'active:scale-95 active:opacity-90'
-                }`}
+              className={`
+                w-full rounded-2xl py-5 items-center justify-center
+                ${isLoading
+                  ? 'bg-blue-400'
+                  : 'bg-blue-600 active:bg-blue-700'
+                }
+                shadow-lg shadow-blue-500/30
+              `}
               style={{
-                transform: [{ scale: isLoading ? 1 : 1 }]
+                elevation: 8,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
               }}
             >
               {isLoading ? (
-                <ActivityIndicator size="small" color="white" />
+                <ActivityIndicator color="white" size="large" />
               ) : (
                 <View className="flex-row items-center">
-                  <CheckCircle size={24} color="white" className="mr-2" />
-                  <Text className="text-white font-bold text-lg">
-                    Crear mi cuenta
+                  <CheckCircle size={24} color="white" />
+                  <Text className="text-white font-bold text-lg ml-3">
+                    Crear cuenta
                   </Text>
                 </View>
               )}
             </Pressable>
 
-            {/* Enlace a Login */}
-            <View className="flex-row justify-center items-center mt-8 pt-6 border-t border-gray-200">
-              <Text className="text-gray-600 text-base">
-                ¿Ya tienes una cuenta?
-              </Text>
-              <TouchableOpacity
-                onPress={() => navigation.navigate('Login')}
-                className="ml-2"
-                disabled={isLoading}
-              >
-                <Text className="text-blue-600 font-bold text-base">
-                  Iniciar Sesión
-                </Text>
-              </TouchableOpacity>
+            {/* Términos y condiciones (opcional para UX móvil) */}
+            <Text className="text-gray-500 text-xs text-center mt-4 px-2">
+              Al registrarte, aceptas nuestros{' '}
+              <Text className="text-blue-600">Términos de servicio</Text> y{' '}
+              <Text className="text-blue-600">Política de privacidad</Text>
+            </Text>
+
+            {/* SEPARADOR */}
+            <View className="flex-row items-center my-8">
+              <View className="flex-1 h-px bg-gray-200" />
+              <Text className="mx-4 text-gray-400 text-sm">¿Ya tienes cuenta?</Text>
+              <View className="flex-1 h-px bg-gray-200" />
             </View>
 
-            {/* Términos y condiciones */}
-            <Text className="text-center text-gray-500 text-sm mt-8 px-4 leading-5">
-              Al registrarte, aceptas nuestros{' '}
-              <Text className="text-blue-600 font-semibold">Términos de servicio</Text>{' '}
-              y{' '}
-              <Text className="text-blue-600 font-semibold">Política de privacidad</Text>
-            </Text>
+            {/* BOTÓN LOGIN ALTERNATIVO */}
+            <Pressable
+              onPress={() => navigation.navigate('Login')}
+              className="w-full rounded-2xl py-4 items-center justify-center border-2 border-blue-200 bg-white active:bg-blue-50"
+            >
+              <Text className="text-blue-600 font-bold text-base">
+                Iniciar sesión
+              </Text>
+            </Pressable>
+
           </View>
+
+          {/* Espacio adicional para teclado en móvil */}
+          <View className="h-10" />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

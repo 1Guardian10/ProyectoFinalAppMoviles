@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, FlatList, Button, TouchableOpacity, Image, StyleSheet, Linking } from 'react-native';
 import * as Location from 'expo-location';
 import { supabase } from '../supabase/supabase';
@@ -15,9 +16,12 @@ export default function RestaurantProducts({ route, navigation }: any) {
     setProducts(data || []);
   };
 
-  useEffect(() => {
-    fetch();
-  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetch();
+    }, [restaurantId])
+  );
 
   const addToCart = (product: any) => {
     setCart((prev) => {
@@ -126,33 +130,38 @@ export default function RestaurantProducts({ route, navigation }: any) {
 
   return (
     <View style={{ flex: 1 }}>
-      <Text style={{ fontWeight: 'bold', padding: 12 }}>{restaurantName || 'Productos'}</Text>
+      <FlatList
+        data={products}
+        keyExtractor={(i) => String(i.id)}
+        ListHeaderComponent={<Text style={{ fontWeight: 'bold', padding: 12 }}>{restaurantName || 'Productos'}</Text>}
+        renderItem={renderProduct}
+        ListEmptyComponent={<Text style={{ padding: 12 }}>No hay productos</Text>}
+        ListFooterComponent={
+          <View style={{ padding: 12, borderTopWidth: 1, borderColor: '#ddd', paddingBottom: 40 }}>
+            <Text style={{ fontWeight: '600' }}>Carrito</Text>
+            {cart.length === 0 && <Text>Vacío</Text>}
+            {cart.map((c) => (
+              <View key={c.producto_id} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+                <Text>{c.nombre_producto} x{c.cantidad}</Text>
+                <View style={{ flexDirection: 'row' }}>
+                  <TouchableOpacity onPress={() => removeFromCart(c.producto_id)} style={{ marginLeft: 8 }}>
+                    <Text style={{ color: 'red' }}>Quitar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
 
-      <FlatList data={products} keyExtractor={(i) => String(i.id)} renderItem={renderProduct} ListEmptyComponent={<Text style={{ padding: 12 }}>No hay productos</Text>} />
+            <View style={{ marginTop: 8 }}>
+              <Text style={{ marginBottom: 6 }}>La ubicación actual del dispositivo se intentará guardar al realizar el pedido.</Text>
+              <Button title="Probar permisos de ubicación" onPress={checkLocationPermission} />
+            </View>
 
-      <View style={{ padding: 12, borderTopWidth: 1, borderColor: '#ddd' }}>
-        <Text style={{ fontWeight: '600' }}>Carrito</Text>
-        {cart.length === 0 && <Text>Vacío</Text>}
-        {cart.map((c) => (
-          <View key={c.producto_id} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
-            <Text>{c.nombre_producto} x{c.cantidad}</Text>
-            <View style={{ flexDirection: 'row' }}>
-              <TouchableOpacity onPress={() => removeFromCart(c.producto_id)} style={{ marginLeft: 8 }}>
-                <Text style={{ color: 'red' }}>Quitar</Text>
-              </TouchableOpacity>
+            <View style={{ marginTop: 12 }}>
+              <Button title="Realizar pedido" onPress={placeOrder} />
             </View>
           </View>
-        ))}
-
-        <View style={{ marginTop: 8 }}>
-          <Text style={{ marginBottom: 6 }}>La ubicación actual del dispositivo se intentará guardar al realizar el pedido.</Text>
-          <Button title="Probar permisos de ubicación" onPress={checkLocationPermission} />
-        </View>
-
-        <View style={{ marginTop: 12 }}>
-          <Button title="Realizar pedido" onPress={placeOrder} />
-        </View>
-      </View>
+        }
+      />
     </View>
   );
 }
