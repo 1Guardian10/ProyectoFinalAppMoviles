@@ -1,0 +1,189 @@
+TpK2wirwFDHVwiSY
+-- Crear los roles básicos si no existen (Ej: ADMIN, CLIENTE, RESTAURANTE, REPARTIDOR)
+CREATE TABLE public.roles (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(30) UNIQUE NOT NULL,
+    descripcion TEXT
+);
+
+INSERT INTO public.roles (nombre) VALUES ('cliente'), ('restaurante'), ('repartidor'), ('admin');
+
+-- TABLA USUARIOS (Vínculo con Auth)
+CREATE TABLE public.usuarios (
+    id UUID REFERENCES auth.users NOT NULL PRIMARY KEY, -- Usamos el UUID de Supabase
+    nombre VARCHAR(100),
+    correo VARCHAR(100) UNIQUE,
+    telefono VARCHAR(20),
+    rol_id INTEGER REFERENCES public.roles(id),
+    direccion_text TEXT,
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- TABLA CATEGORIAS Y RESTAURANTES
+CREATE TABLE public.categorias (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE public.restaurantes (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    direccion TEXT,
+    telefono VARCHAR(20),
+    propietario_id UUID REFERENCES public.usuarios(id),
+    estado BOOLEAN DEFAULT TRUE,
+    creado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- PRODUCTOS
+CREATE TABLE public.productos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    precio NUMERIC(10,2),
+    disponible BOOLEAN DEFAULT TRUE,
+    imagen_url TEXT,
+    categoria_id INTEGER REFERENCES public.categorias(id),
+    restaurante_id INTEGER REFERENCES public.restaurantes(id)
+);
+
+-- PEDIDOS Y DETALLES
+CREATE TABLE public.pedidos (
+    id SERIAL PRIMARY KEY,
+    cliente_id UUID REFERENCES public.usuarios(id),
+    restaurante_id INTEGER REFERENCES public.restaurantes(id),
+    repartidor_id UUID REFERENCES public.usuarios(id),
+    estado VARCHAR(20) DEFAULT 'pendiente',
+    total NUMERIC(10,2),
+    direccion_entrega TEXT,
+    fecha TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE public.detalle_pedidos (
+    id SERIAL PRIMARY KEY,
+    pedido_id INTEGER REFERENCES public.pedidos(id) ON DELETE CASCADE,
+    producto_id INTEGER REFERENCES public.productos(id),
+    nombre_producto VARCHAR(100),
+    cantidad INTEGER,
+    precio_unitario NUMERIC(10,2),
+    subtotal NUMERIC(10,2)
+);
+
+-- ENTREGAS (Tracking)
+CREATE TABLE public.entregas (
+    id SERIAL PRIMARY KEY,
+    pedido_id INTEGER REFERENCES public.pedidos(id),
+    repartidor_id UUID REFERENCES public.usuarios(id),
+    latitud NUMERIC(10,6),
+    longitud NUMERIC(10,6),
+    estado VARCHAR(20),
+    actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Función que se ejecuta al registrarse
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.usuarios (id, nombre, correo, rol_id)
+  VALUES (
+    new.id, 
+    new.raw_user_meta_data->>'nombre', 
+    new.email, 
+    (SELECT id FROM public.roles WHERE nombre = 'cliente') -- Rol por defecto
+  );
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+  -- 1. Habilitar RLS en las tablas
+ALTER TABLE public.pedidos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.productos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.restaurantes ENABLE ROW LEVEL SECURITY;
+
+-- 2. POLÍTICAS PARA "PEDIDOS"
+
+-- El ADMIN puede hacer TODO
+CREATE POLICY "Admin total pedidos" ON public.pedidos 
+FOR ALL TO authenticated USING (
+  EXISTS (SELECT 1 FROM usuarios WHERE id = auth.uid() AND rol_id = (SELECT id FROM roles WHERE nombre = 'admin'))
+);
+
+-- CLIENTES: Pueden crear sus propios pedidos y leer solo los suyos
+CREATE POLICY "Clientes manejan sus pedidos" ON public.pedidos
+FOR SELECT USING (auth.uid() = cliente_id);
+
+CREATE POLICY "Clientes crean sus pedidos" ON public.pedidos
+FOR INSERT WITH CHECK (auth.uid() = cliente_id);
+
+-- RESTAURANTE: Puede ver los pedidos que pertenecen a su restaurante y editarlos (estado)
+CREATE POLICY "Restaurante maneja pedidos" ON public.pedidos
+FOR ALL USING (
+  EXISTS (
+    SELECT 1 FROM restaurantes 
+    WHERE restaurantes.id = pedidos.restaurante_id 
+    AND restaurantes.propietario_id = auth.uid()
+  )
+);
+
+-- 3. POLÍTICAS PARA "PRODUCTOS"
+
+-- Todo el mundo puede ver productos
+CREATE POLICY "Cualquiera ve productos" ON public.productos FOR SELECT USING (true);
+
+-- Solo el restaurante (dueño) y el admin pueden crear/editar productos
+CREATE POLICY "Restaurante maneja sus productos" ON public.productos
+FOR ALL USING (
+  EXISTS (
+    SELECT 1 FROM restaurantes 
+    WHERE restaurantes.id = productos.restaurante_id 
+    AND restaurantes.propietario_id = auth.uid()
+  )
+);
+
+-- Habilitar RLS en las tablas que faltan
+ALTER TABLE public.detalle_pedidos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.entregas ENABLE ROW LEVEL SECURITY;
+
+-- Los clientes pueden ver los detalles de SUS propios pedidos
+CREATE POLICY "Clientes ven detalles de sus pedidos" ON public.detalle_pedidos
+FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM public.pedidos 
+    WHERE pedidos.id = detalle_pedidos.pedido_id 
+    AND pedidos.cliente_id = auth.uid()
+  )
+);
+
+-- Los repartidores pueden ver los detalles de los pedidos que deben entregar
+CREATE POLICY "Repartidores ven detalles asignados" ON public.detalle_pedidos
+FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM public.pedidos 
+    WHERE pedidos.id = detalle_pedidos.pedido_id 
+    AND pedidos.repartidor_id = auth.uid()
+  )
+);
+
+CREATE POLICY "Repartidores ven pedidos asignados" ON public.pedidos
+FOR SELECT USING (repartidor_id = auth.uid());
+
+CREATE POLICY "Repartidores actualizan estado de pedido" ON public.pedidos
+FOR UPDATE USING (repartidor_id = auth.uid()) 
+WITH CHECK (repartidor_id = auth.uid());
+
+ALTER TABLE public.usuarios ENABLE ROW LEVEL SECURITY;
+
+-- Cada uno ve su propio perfil
+CREATE POLICY "Usuarios ven su propio perfil" ON public.usuarios
+FOR SELECT USING (auth.uid() = id);
+
+-- El Admin ve todo
+CREATE POLICY "Admin ve todos los perfiles" ON public.usuarios
+FOR ALL USING (
+  EXISTS (SELECT 1 FROM roles WHERE id = usuarios.rol_id AND nombre = 'admin')
+);
