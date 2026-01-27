@@ -41,6 +41,7 @@ yarn-error.*
 /android
 
 #reglas
-.supabase_restaurantes_policies.sql
-.supabase_usuarios_policies.sql
-.a.txt
+supabase_restaurantes_policies.sql
+supabase_usuarios_policies.sql
+a.txt
+supabase_pedidos_policies.sql

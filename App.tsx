@@ -18,6 +18,8 @@ import AdminRoles from './pages/AdminRoles';
 import AdminUsuarios from './pages/AdminUsuarios';
 import Restaurantes from './pages/Restaurantes';
 import RestaurantProducts from './pages/RestaurantProducts';
+import DriverOrders from './pages/DriverOrders';
+
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -37,6 +39,7 @@ function MainDrawer() {
       <Drawer.Screen name="AdminUsuarios" component={AdminUsuarios} options={{ title: 'Usuarios' }} />
       <Drawer.Screen name="RestaurantesCliente" component={Restaurantes} options={{ title: 'Restaurantes' }} />
       <Drawer.Screen name="RestaurantProducts" component={RestaurantProducts} options={{ title: 'Productos del restaurante' }} />
+      <Drawer.Screen name="DriverOrders" component={DriverOrders} options={{ title: 'Pedidos (Repartidor)' }} />
     </Drawer.Navigator>
   );
 }

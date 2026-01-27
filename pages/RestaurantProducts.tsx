@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Button, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, Button, Alert, TouchableOpacity, Image, StyleSheet, Linking } from 'react-native';
+import * as Location from 'expo-location';
 import { supabase } from '../supabase/supabase';
-
 export default function RestaurantProducts({ route, navigation }: any) {
   const { restaurantId, restaurantName } = route.params || {};
   const [products, setProducts] = useState<any[]>([]);
   const [cart, setCart] = useState<any[]>([]);
+
 
   const fetch = async () => {
     const { data, error } = await supabase.from('productos').select('*').eq('restaurante_id', restaurantId).order('id', { ascending: true });
@@ -41,7 +42,7 @@ export default function RestaurantProducts({ route, navigation }: any) {
 
       const total = cart.reduce((s, p) => s + (p.subtotal || 0), 0);
 
-      const { data: pedidoData, error: pedidoErr } = await supabase.from('pedidos').insert({ cliente_id: user.id, restaurante_id: restaurantId, total }).select('id').single();
+      const { data: pedidoData, error: pedidoErr } = await supabase.from('pedidos').insert({ cliente_id: user.id, restaurante_id: restaurantId, total, estado: 'pendiente' }).select('id').single();
       if (pedidoErr) {
         console.log('pedido insert error', pedidoErr);
         return Alert.alert('Error', pedidoErr.message || JSON.stringify(pedidoErr));
@@ -56,6 +57,36 @@ export default function RestaurantProducts({ route, navigation }: any) {
         return Alert.alert('Error', detalleErr.message || JSON.stringify(detalleErr));
       }
 
+      // Intentar obtener ubicación actual y crear registro en entregas
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === 'granted') {
+          const loc = await Location.getCurrentPositionAsync({});
+          const { error: entregaErr } = await supabase.from('entregas').insert({
+            pedido_id: pedidoId,
+            latitud: loc.coords.latitude,
+            longitud: loc.coords.longitude,
+            estado: 'pendiente',
+          });
+          if (entregaErr) {
+            console.log('entrega insert error', entregaErr);
+            Alert.alert('Advertencia', 'Pedido creado pero no se pudo guardar la ubicación de entrega');
+          }
+        } else {
+          // Permiso denegado: ofrecer abrir ajustes o continuar sin ubicación
+          Alert.alert(
+            'Permiso de ubicación',
+            'No se concedió el permiso de ubicación. ¿Deseas abrir los ajustes para activarlo?',
+            [
+              { text: 'Abrir ajustes', onPress: () => { Linking.openSettings(); } },
+              { text: 'Continuar sin ubicación', style: 'cancel' },
+            ]
+          );
+        }
+      } catch (e) {
+        console.log('error creando entrega', e);
+      }
+
       Alert.alert('Pedido creado', `Pedido #${pedidoId} creado correctamente`);
       setCart([]);
       navigation.navigate('Home');
@@ -64,10 +95,30 @@ export default function RestaurantProducts({ route, navigation }: any) {
     }
   };
 
+  const checkLocationPermission = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        Alert.alert('Permiso concedido', 'Se podrá guardar la ubicación al realizar el pedido.');
+      } else {
+        Alert.alert('Permiso denegado', 'No se concedió el permiso. ¿Abrir ajustes?', [
+          { text: 'Abrir ajustes', onPress: () => Linking.openSettings() },
+          { text: 'Ok', style: 'cancel' },
+        ]);
+      }
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'No se pudo comprobar permisos');
+    }
+  };
+
   const renderProduct = ({ item }: { item: any }) => (
     <View style={{ padding: 12, borderBottomWidth: 1, borderColor: '#eee' }}>
       <Text style={{ fontWeight: '600' }}>{item.nombre}</Text>
       <Text>Precio: {item.precio ?? '-'}</Text>
+      <Image
+        source={{ uri: item.imagen_url }}
+        style={{ width: 100, height: 100 }}
+      />
       <Button title="Agregar" onPress={() => addToCart(item)} />
     </View>
   );
@@ -92,8 +143,21 @@ export default function RestaurantProducts({ route, navigation }: any) {
           </View>
         ))}
 
-        <Button title="Realizar pedido" onPress={placeOrder} />
+        <View style={{ marginTop: 8 }}>
+          <Text style={{ marginBottom: 6 }}>La ubicación actual del dispositivo se intentará guardar al realizar el pedido.</Text>
+          <Button title="Probar permisos de ubicación" onPress={checkLocationPermission} />
+        </View>
+
+        <View style={{ marginTop: 12 }}>
+          <Button title="Realizar pedido" onPress={placeOrder} />
+        </View>
       </View>
+
+      {/* Eliminado el selector de mapa: la ubicación se obtiene en el momento del pedido */}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+});

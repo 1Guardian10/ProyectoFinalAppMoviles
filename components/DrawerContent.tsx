@@ -6,6 +6,7 @@ import { supabase } from '../supabase/supabase';
 export default function DrawerContent(props: DrawerContentComponentProps) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [isDriver, setIsDriver] = useState(false);
   const [roleName, setRoleName] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [debugMsg, setDebugMsg] = useState<string | null>(null);
@@ -54,9 +55,11 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
           setRoleName(rname || null);
           setIsAdmin(['admin', 'administrator'].includes(rname));
           setIsClient(rname === 'cliente' || rname === 'client');
+          setIsDriver(rname === 'repartidor' || rname === 'driver');
           if (['admin', 'administrator'].includes(rname)) setDebugMsg(null);
           else if (rname === 'cliente' || rname === 'client') setDebugMsg(null);
-          else setDebugMsg("El rol del usuario no es 'admin' ni 'cliente'");
+          else if (rname === 'repartidor' || rname === 'driver') setDebugMsg(null);
+          else setDebugMsg("El rol del usuario no es 'admin', 'cliente' ni 'repartidor'");
         }
       } catch (e) {
         if (mounted) setIsAdmin(false);
@@ -108,12 +111,25 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
           <Pressable onPress={() => props.navigation.navigate('AdminUsuarios')}>
             <Text>Usuarios (Admin)</Text>
           </Pressable>
+          <Pressable onPress={() => props.navigation.navigate('RestaurantesCliente')}>
+            <Text>Restaurantes</Text>
+          </Pressable>
+          <Pressable onPress={() => props.navigation.navigate('DriverOrders')}>
+            <Text>Pedidos (Repartidor)</Text>
+          </Pressable>
         </>
       )}
       {isClient && (
         <>
           <Pressable onPress={() => props.navigation.navigate('RestaurantesCliente')}>
             <Text>Restaurantes</Text>
+          </Pressable>
+        </>
+      )}
+      {isDriver && (
+        <>
+          <Pressable onPress={() => props.navigation.navigate('DriverOrders')}>
+            <Text>Pedidos (Repartidor)</Text>
           </Pressable>
         </>
       )}

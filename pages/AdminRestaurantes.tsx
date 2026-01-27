@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TextInput, Button, Alert } from 'react-native';
+import { View, Text, FlatList, TextInput, Button, Alert, Switch } from 'react-native';
 import { supabase } from '../supabase/supabase';
 
 export default function AdminRestaurantes() {
   const [items, setItems] = useState<any[]>([]);
   const [nombre, setNombre] = useState('');
   const [direccion, setDireccion] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [estado, setEstado] = useState<boolean>(true);
 
   const fetchItems = async () => {
     const { data, error } = await supabase.from('restaurantes').select('*');
@@ -27,6 +29,8 @@ export default function AdminRestaurantes() {
       const resp = await supabase.from('restaurantes').insert({
         nombre: nombre.trim(),
         direccion: direccion.trim() || null,
+        telefono: telefono.trim() || null,
+        estado: estado,
         propietario_id: user.id,
       });
       const { error } = resp;
@@ -41,6 +45,8 @@ export default function AdminRestaurantes() {
     }
     setNombre('');
     setDireccion('');
+    setTelefono('');
+    setEstado(true);
     fetchItems();
   };
 
@@ -60,6 +66,17 @@ export default function AdminRestaurantes() {
         onChangeText={setDireccion}
         style={{ borderWidth: 1, padding: 8, marginBottom: 8 }}
       />
+      <TextInput
+        placeholder="Teléfono"
+        value={telefono}
+        onChangeText={setTelefono}
+        keyboardType="phone-pad"
+        style={{ borderWidth: 1, padding: 8, marginBottom: 8 }}
+      />
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+        <Text style={{ marginRight: 8 }}>Activo</Text>
+        <Switch value={estado} onValueChange={setEstado} />
+      </View>
       <Button title="Agregar" onPress={handleAdd} />
 
       <FlatList
