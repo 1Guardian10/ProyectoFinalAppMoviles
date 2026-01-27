@@ -49,22 +49,37 @@ function MainDrawer() {
 export default function App() {
   const [initialRoute, setInitialRoute] = React.useState('Login');
   const [loading, setLoading] = React.useState(true);
-
   React.useEffect(() => {
-    async function checkSession() {
-      try {
-        const { data } = await import('./supabase/supabase').then(m => m.supabase.auth.getSession());
-        if (data.session) {
+      // Importamos supabase dinámicamente como lo hacías o directamente si prefieres
+      const initializeAuth = async () => {
+        const { supabase } = await import('./supabase/supabase');
+
+        // Comprobación inicial de la sesión
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
           setInitialRoute('Main');
+        } else {
+          setInitialRoute('Login');
         }
-      } catch (e) {
-        // En caso de error, default a Login
-      } finally {
         setLoading(false);
-      }
-    }
-    checkSession();
-  }, []);
+
+        // Escuchar cambios en la autenticación (Login, Logout, Token Refreshed)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+          if (!session) {
+            //Si no hay sesión o el refresh token falló, mandamos a Login
+            setInitialRoute('Login'); 
+          } else {
+            setInitialRoute('Main');
+          }
+        });
+
+        return () => {
+          subscription.unsubscribe();
+        };
+      };
+
+      initializeAuth();
+    }, []);
 
   if (loading) {
     return (

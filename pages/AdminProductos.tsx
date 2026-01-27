@@ -88,7 +88,6 @@ export default function AdminProductos() {
         const publicUrl = await uploadImageAsync(uri, 'imagenes_productos');
         if (publicUrl) {
           setImagenUrl(publicUrl);
-          showAlert('Éxito', 'Imagen subida correctamente');
         } else {
           showAlert('Error', 'No se obtuvo URL pública');
         }
