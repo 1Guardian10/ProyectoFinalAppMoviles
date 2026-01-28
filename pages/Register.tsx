@@ -163,6 +163,7 @@ export default function Register({ navigation }: any) {
         telefono: phone
       });
       showSuccessAlert();
+      navigation.replace('Login');
     } catch (err: any) {
       console.error('Error en registro:', err);
 
