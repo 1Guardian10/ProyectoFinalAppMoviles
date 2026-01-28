@@ -129,10 +129,10 @@ export default function HomePresentation({ navigation }: any) {
                 </View>
               </View>
 
-              <View className="bg-white/15 p-6 rounded-[40px] border border-white/20 backdrop-blur-sm shadow-2xl">
+              <View className="bg-white/15 p-6 rounded-[40px] border border-white/20 backdrop-blur-sm shadow-2xl items-center justify-center">
                 <Image
                   source={require('../assets/logoderecha.png')}
-                  className="w-40 h-40 md:w-64 md:h-64"
+                  className="w-32 h-32 sm:w-40 sm:h-40 md:w-64 md:h-64"
                   resizeMode="contain"
                 />
               </View>
@@ -234,12 +234,14 @@ export default function HomePresentation({ navigation }: any) {
                   { icon: 'favorite', color: '#F59E0B', bg: 'bg-amber-50', title: 'Atención 24/7', desc: 'Siempre aquí para resolver tus dudas.' },
                 ].map((feature, index) => (
                   <View key={index} className="w-full sm:w-1/2 lg:w-1/4 px-2 mb-4">
-                    <View className={`${feature.bg} p-6 rounded-3xl h-full border border-white/50`}>
-                      <View className="bg-white w-12 h-12 rounded-2xl items-center justify-center shadow-sm mb-4">
+                    <View className={`${feature.bg} p-6 rounded-3xl border border-white/50 flex-row sm:flex-col items-center`}>
+                      <View className="bg-white w-12 h-12 rounded-2xl items-center justify-center shadow-sm mb-0 sm:mb-4 mr-4 sm:mr-0">
                         <MaterialIcons name={feature.icon as any} size={24} color={feature.color} />
                       </View>
-                      <Text className="text-gray-900 font-bold text-lg mb-2">{feature.title}</Text>
-                      <Text className="text-gray-600 text-sm leading-relaxed">{feature.desc}</Text>
+                      <View className="flex-1 sm:items-center">
+                        <Text className="text-gray-900 font-bold text-lg mb-1 sm:mb-2 sm:text-center">{feature.title}</Text>
+                        <Text className="text-gray-600 text-sm leading-relaxed text-left sm:text-center">{feature.desc}</Text>
+                      </View>
                     </View>
                   </View>
                 ))}
