@@ -9,10 +9,9 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
-  Dimensions,
-  SafeAreaView,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { signUpWithEmail } from '../utils/Auth';
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Phone, Shield, CheckCircle } from 'lucide-react-native';
 
