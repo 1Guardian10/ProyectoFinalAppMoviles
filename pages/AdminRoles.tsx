@@ -1,51 +1,185 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TextInput, Button } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
 import { supabase } from '../supabase/supabase';
 import { showAlert } from '../utils/AlertNativa';
 
 export default function AdminRoles() {
   const [items, setItems] = useState<any[]>([]);
   const [nombre, setNombre] = useState('');
-
-  const fetchItems = async () => {
-    const { data, error } = await supabase.from('roles').select('*');
-    if (error) return showAlert('Error', error.message);
-    setItems(data || []);
-  };
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchItems();
   }, []);
 
-  const handleAdd = async () => {
-    if (!nombre.trim()) return showAlert('Validación', 'Nombre requerido');
-    const { error } = await supabase.from('roles').insert({ nombre: nombre.trim() });
+  const fetchItems = async () => {
+    const { data, error } = await supabase.from('roles').select('*').order('id');
     if (error) return showAlert('Error', error.message);
+    setItems(data || []);
+  };
+
+  const resetForm = () => {
     setNombre('');
+    setEditingId(null);
+  };
+
+  // CREAR O EDITAR
+  const handleSave = async () => {
+    if (!nombre.trim()) return showAlert('Validación', 'Nombre requerido');
+
+    let error;
+
+    if (editingId) {
+      ({ error } = await supabase
+        .from('roles')
+        .update({ nombre: nombre.trim() })
+        .eq('id', editingId));
+    } else {
+      ({ error } = await supabase
+        .from('roles')
+        .insert({ nombre: nombre.trim() }));
+    }
+
+    if (error) return showAlert('Error', error.message);
+
+    showAlert(
+      'Éxito',
+      editingId ? 'Rol actualizado correctamente' : 'Rol agregado correctamente'
+    );
+
+    resetForm();
     fetchItems();
   };
 
+  const handleEdit = (item: any) => {
+    setEditingId(item.id);
+    setNombre(item.nombre);
+  };
+
+  const handleDelete = (id: number) => {
+    Alert.alert(
+      'Confirmar',
+      '¿Seguro que deseas eliminar este rol?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await supabase.from('roles').delete().eq('id', id);
+            if (error) return showAlert('Error', error.message);
+
+            showAlert('Éxito', 'Rol eliminado correctamente');
+            fetchItems();
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const renderItem = ({ item }: { item: any }) => (
+    <View className="bg-white rounded-xl p-3 mb-2 border border-blue-100 shadow-sm">
+      <View className="flex-row justify-between items-center">
+        <Text className="text-blue-900 font-semibold text-sm flex-1">
+          {item.nombre}
+        </Text>
+
+        <View className="flex-row">
+          <TouchableOpacity
+            onPress={() => handleEdit(item)}
+            className="bg-yellow-500 px-3 py-1 rounded-lg mr-2"
+          >
+            <Text className="text-white text-xs font-bold">Editar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => handleDelete(item.id)}
+            className="bg-red-500 px-3 py-1 rounded-lg"
+          >
+            <Text className="text-white text-xs font-bold">Eliminar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+
   return (
-    <View style={{ flex: 1, padding: 12 }}>
-      <Text style={{ fontWeight: 'bold', marginBottom: 8 }}>Roles</Text>
+    <View className="flex-1 bg-blue-700">
+      {/* HEADER */}
+      <View className="h-44 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 rounded-b-[40px] px-5 pt-10 justify-center">
+        <Text className="text-white text-3xl font-extrabold">
+          Gestión de roles
+        </Text>
+        <Text className="text-blue-100 mt-1">
+          Crear, editar y eliminar roles
+        </Text>
+      </View>
 
-      <TextInput
-        placeholder="Nombre"
-        value={nombre}
-        onChangeText={setNombre}
-        style={{ borderWidth: 1, padding: 8, marginBottom: 8 }}
-      />
-      <Button title="Agregar" onPress={handleAdd} />
+      {/* CONTENIDO */}
+      <View className="flex-1 px-5 -mt-6 pb-3">
+        <View className="bg-white rounded-[22px] p-4 shadow-xl shadow-blue-900/20 border border-blue-100 flex-1">
 
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={{ paddingVertical: 8 }}>
-            <Text>{item.nombre}</Text>
-          </View>
-        )}
-      />
+          {/* FORMULARIO */}
+          <Text className="text-blue-900 font-bold text-base mb-3">
+            {editingId ? 'Editar rol' : 'Nuevo rol'}
+          </Text>
+
+          <TextInput
+            placeholder="Nombre del rol"
+            value={nombre}
+            onChangeText={setNombre}
+            placeholderTextColor="#93C5FD"
+            className="border border-blue-200 rounded-lg px-3 py-2 text-blue-900 mb-3"
+          />
+
+          <TouchableOpacity
+            onPress={handleSave}
+            className={`py-3 rounded-xl items-center ${editingId ? 'bg-yellow-500' : 'bg-blue-600'
+              }`}
+          >
+            <Text className="text-white font-bold text-sm">
+              {editingId ? 'Guardar cambios' : 'Agregar rol'}
+            </Text>
+          </TouchableOpacity>
+
+          {editingId && (
+            <TouchableOpacity
+              onPress={resetForm}
+              className="mt-2 py-2 rounded-xl items-center bg-gray-400"
+            >
+              <Text className="text-white font-bold text-sm">
+                Cancelar edición
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* LISTA */}
+          <Text className="text-blue-900 font-bold text-base mt-5 mb-3">
+            Roles registrados
+          </Text>
+
+          <FlatList
+            data={items}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            ListEmptyComponent={
+              <Text className="text-center text-blue-200 mt-6">
+                No hay roles registrados
+              </Text>
+            }
+          />
+        </View>
+      </View>
     </View>
   );
 }

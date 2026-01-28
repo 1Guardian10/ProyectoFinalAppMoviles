@@ -21,7 +21,11 @@ import Restaurantes from './pages/Restaurantes';
 import RestaurantProducts from './pages/RestaurantProducts';
 import DriverOrders from './pages/DriverOrders';
 import DriverActiveOrders from './pages/DriverActiveOrders';
+import DriverCompleteOrders from './pages/DriverCompleteOrders';
+import ClientOrderHistory from './pages/ClientOrderHistory';
+import OrdersStats from './pages/OrdersStats';
 
+import AdminPanel from './pages/AdminPanel';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -34,11 +38,7 @@ function MainDrawer() {
       drawerContent={(props) => <DrawerContent {...props} />}
     >
       <Drawer.Screen name="Home" component={Home} />
-      <Drawer.Screen name="AdminCategorias" component={AdminCategorias} options={{ title: 'Categorías' }} />
-      <Drawer.Screen name="AdminProductos" component={AdminProductos} options={{ title: 'Productos' }} />
-      <Drawer.Screen name="AdminRestaurantes" component={AdminRestaurantes} options={{ title: 'Restaurantes' }} />
-      <Drawer.Screen name="AdminRoles" component={AdminRoles} options={{ title: 'Roles' }} />
-      <Drawer.Screen name="AdminUsuarios" component={AdminUsuarios} options={{ title: 'Usuarios' }} />
+      <Drawer.Screen name="AdminPanel" component={AdminPanel} options={{ title: 'Panel de Admin' }} />
       <Drawer.Screen name="RestaurantesCliente" component={Restaurantes} options={{ title: 'Restaurantes' }} />
       <Drawer.Screen name="RestaurantProducts" component={RestaurantProducts} options={{ title: 'Productos del restaurante' }} />
       <Drawer.Screen name="DriverOrders" component={DriverOrders} options={{ title: 'Pedidos Disponibles' }} />
@@ -46,40 +46,41 @@ function MainDrawer() {
     </Drawer.Navigator>
   );
 }
+
 export default function App() {
   const [initialRoute, setInitialRoute] = React.useState('Login');
   const [loading, setLoading] = React.useState(true);
   React.useEffect(() => {
-      // Importamos supabase dinámicamente como lo hacías o directamente si prefieres
-      const initializeAuth = async () => {
-        const { supabase } = await import('./supabase/supabase');
+    // Importamos supabase dinámicamente como lo hacías o directamente si prefieres
+    const initializeAuth = async () => {
+      const { supabase } = await import('./supabase/supabase');
 
-        // Comprobación inicial de la sesión
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          setInitialRoute('Main');
-        } else {
+      // Comprobación inicial de la sesión
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setInitialRoute('Main');
+      } else {
+        setInitialRoute('Login');
+      }
+      setLoading(false);
+
+      // Escuchar cambios en la autenticación (Login, Logout, Token Refreshed)
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (!session) {
+          //Si no hay sesión o el refresh token falló, mandamos a Login
           setInitialRoute('Login');
+        } else {
+          setInitialRoute('Main');
         }
-        setLoading(false);
+      });
 
-        // Escuchar cambios en la autenticación (Login, Logout, Token Refreshed)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-          if (!session) {
-            //Si no hay sesión o el refresh token falló, mandamos a Login
-            setInitialRoute('Login'); 
-          } else {
-            setInitialRoute('Main');
-          }
-        });
-
-        return () => {
-          subscription.unsubscribe();
-        };
+      return () => {
+        subscription.unsubscribe();
       };
+    };
 
-      initializeAuth();
-    }, []);
+    initializeAuth();
+  }, []);
 
   if (loading) {
     return (
@@ -97,6 +98,16 @@ export default function App() {
             <Stack.Screen name="Login" component={Login} />
             <Stack.Screen name="Register" component={Register} />
             <Stack.Screen name="Main" component={MainDrawer} />
+
+            {/* Rutas de Admin (fuera del Drawer para tener Botón de Atrás) */}
+            <Stack.Screen name="AdminCategorias" component={AdminCategorias} options={{ headerShown: true, title: 'Categorías' }} />
+            <Stack.Screen name="AdminProductos" component={AdminProductos} options={{ headerShown: true, title: 'Productos' }} />
+            <Stack.Screen name="AdminRestaurantes" component={AdminRestaurantes} options={{ headerShown: true, title: 'Restaurantes' }} />
+            <Stack.Screen name="AdminRoles" component={AdminRoles} options={{ headerShown: true, title: 'Roles' }} />
+            <Stack.Screen name="AdminUsuarios" component={AdminUsuarios} options={{ headerShown: true, title: 'Usuarios' }} />
+            <Stack.Screen name="OrdersStats" component={OrdersStats} options={{ headerShown: true, title: 'Estadísticas' }} />
+            <Stack.Screen name="DriverCompleteOrders" component={DriverCompleteOrders} options={{ headerShown: true, title: 'Finalizar Pedidos' }} />
+            <Stack.Screen name="ClientOrderHistory" component={ClientOrderHistory} options={{ headerShown: true, title: 'Historial de Pedidos' }} />
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaProvider>

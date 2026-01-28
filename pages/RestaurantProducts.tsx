@@ -93,6 +93,35 @@ export default function RestaurantProducts({ route, navigation }: any) {
       ];
     });
   };
+  const increaseQty = (producto_id: number) => {
+    setCart((prev) =>
+      prev.map((p) =>
+        p.producto_id === producto_id
+          ? {
+            ...p,
+            cantidad: p.cantidad + 1,
+            subtotal: (p.cantidad + 1) * p.precio_unitario,
+          }
+          : p
+      )
+    );
+  };
+
+  const decreaseQty = (producto_id: number) => {
+    setCart((prev) =>
+      prev
+        .map((p) =>
+          p.producto_id === producto_id
+            ? {
+              ...p,
+              cantidad: p.cantidad - 1,
+              subtotal: (p.cantidad - 1) * p.precio_unitario,
+            }
+            : p
+        )
+        .filter((p) => p.cantidad > 0) // si llega a 0, se elimina solo
+    );
+  };
 
   const removeFromCart = (producto_id: number) => {
     setCart((prev) => prev.filter((p) => p.producto_id !== producto_id));
@@ -340,22 +369,53 @@ export default function RestaurantProducts({ route, navigation }: any) {
               data={cart}
               keyExtractor={(c) => String(c.producto_id)}
               renderItem={({ item }) => (
-                <View className="border-b border-gray-100 py-2">
-                  <Text className="font-bold text-gray-800">
+                <View className="border-b border-gray-100 py-3">
+                  {/* Nombre del producto */}
+                  <Text className="font-extrabold text-gray-800 text-base">
                     {item.nombre_producto}
                   </Text>
-                  <View className="flex-row justify-between">
-                    <Text className="text-gray-600">
-                      {item.cantidad} x Bs {item.precio_unitario}
-                    </Text>
-                    <Text className="text-blue-700 font-bold">
+
+                  <View className="flex-row justify-between items-center mt-2">
+                    {/* Control de cantidad estilo profesional */}
+                    <View className="flex-row items-center bg-gray-100 rounded-full px-2 py-1">
+                      {/* Botón menos */}
+                      <TouchableOpacity
+                        onPress={() => decreaseQty(item.producto_id)}
+                        className="w-7 h-7 rounded-full bg-white items-center justify-center shadow"
+                      >
+                        <Text className="text-red-600 font-extrabold text-lg">−</Text>
+                      </TouchableOpacity>
+
+                      {/* Cantidad */}
+                      <View className="mx-3 min-w-[24px] items-center">
+                        <Text className="text-blue-700 font-extrabold text-base">
+                          {item.cantidad}
+                        </Text>
+                      </View>
+
+                      {/* Botón más */}
+                      <TouchableOpacity
+                        onPress={() => increaseQty(item.producto_id)}
+                        className="w-7 h-7 rounded-full bg-blue-600 items-center justify-center shadow"
+                      >
+                        <Text className="text-white font-extrabold text-lg">+</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* Subtotal */}
+                    <Text className="text-blue-700 font-extrabold text-base">
                       Bs {item.subtotal}
                     </Text>
                   </View>
+
+                  {/* Botón eliminar estilo chip */}
                   <TouchableOpacity
                     onPress={() => removeFromCart(item.producto_id)}
+                    className="mt-2 self-start bg-red-50 px-3 py-1 rounded-full"
                   >
-                    <Text className="text-red-500 text-sm">Quitar</Text>
+                    <Text className="text-red-600 text-xs font-bold">
+                      🗑 Eliminar
+                    </Text>
                   </TouchableOpacity>
                 </View>
               )}

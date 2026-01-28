@@ -5,32 +5,22 @@ import {
   TextInput,
   Pressable,
   ScrollView,
-  Image,
-  useWindowDimensions,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
   Alert,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { signInWithEmail, resendConfirmation } from '../utils/Auth';
-import { Svg, Path } from 'react-native-svg';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
 
 export default function Login({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isFocusedEmail, setIsFocusedEmail] = useState(false);
-  const [isFocusedPassword, setIsFocusedPassword] = useState(false);
-  const { width, height } = useWindowDimensions();
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Breakpoints mejorados para web
-  const isMobile = width < 768;
-  const isTablet = width >= 768 && width < 1024;
-  const isDesktop = width >= 1024;
-  const isLargeDesktop = width >= 1280;
-
-  // Función para mostrar alertas
   const showAlert = (
     title: string,
     text: string,
@@ -81,118 +71,237 @@ export default function Login({ navigation }: any) {
     }
   };
 
-  // Estilos condicionales para web
-  const getContainerStyles = () => {
-    if (isMobile) {
-      return 'flex-1 p-4';
-    } else if (isTablet) {
-      return 'flex-row items-center justify-center p-8';
-    } else {
-      return 'flex-row items-center justify-center p-12';
-    }
-  };
-
-  const getLeftPanelStyles = () => {
-    if (isMobile) {
-      return 'hidden';
-    } else if (isTablet) {
-      return 'flex-1 mr-8 max-w-md';
-    } else {
-      return 'flex-1 mr-12 max-w-xl';
-    }
-  };
-
-  const getRightPanelStyles = () => {
-    if (isMobile) {
-      return 'w-full';
-    } else if (isTablet) {
-      return 'w-96';
-    } else if (isDesktop) {
-      return 'w-108';
-    } else {
-      return 'w-120';
-    }
-  };
-
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1"
+        style={{ flex: 1 }}
       >
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <View className="flex-1 justify-center p-6">
+          {/* Header con fondo azul degradado */}
+          <View style={{
+            backgroundColor: '#1e40af',
+            height: 260,
+            borderBottomLeftRadius: 50,
+            borderBottomRightRadius: 50,
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Elementos decorativos del header */}
+            <View style={{
+              position: 'absolute',
+              top: -40,
+              right: -40,
+              width: 160,
+              height: 160,
+              borderRadius: 80,
+              backgroundColor: 'rgba(255,255,255,0.1)'
+            }} />
+            <View style={{
+              position: 'absolute',
+              top: 60,
+              left: -40,
+              width: 120,
+              height: 120,
+              borderRadius: 60,
+              backgroundColor: 'rgba(255,255,255,0.05)'
+            }} />
 
-            {/* Header */}
-            <View className="mb-8 flex-row items-center justify-between">
-              <View>
-                <Text className="text-4xl font-extrabold text-blue-800">INICIAR</Text>
-                <Text className="text-4xl font-extrabold text-blue-800">SESIÓN</Text>
-                <Text className="text-gray-400 mt-2">
+            {/* Logo e imagen */}
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingHorizontal: 24,
+              paddingTop: 70
+            }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{
+                  fontSize: 32,
+                  fontWeight: 'bold',
+                  color: 'white',
+                  lineHeight: 36
+                }}>
+                  INICIAR
+                </Text>
+                <Text style={{
+                  fontSize: 32,
+                  fontWeight: 'bold',
+                  color: 'white',
+                  lineHeight: 36,
+                  marginTop: 4
+                }}>
+                  SESIÓN
+                </Text>
+                <Text style={{
+                  color: 'rgba(255,255,255,0.9)',
+                  marginTop: 12,
+                  fontSize: 16,
+                  fontWeight: '500'
+                }}>
                   Si ya tienes cuenta puedes iniciar sesión
                 </Text>
               </View>
 
-              <Image
-                source={require('../assets/ramenizquierda.png')}
-                className="w-20 h-20"
-                resizeMode="contain"
-              />
+              {/* Imagen del logo */}
+              <View style={{ position: 'relative' }}>
+                <View style={{
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  padding: 12,
+                  borderRadius: 20,
+                  borderWidth: 1,
+                  borderColor: 'rgba(255,255,255,0.3)'
+                }}>
+                  <Image
+                    source={require('../assets/logoderecha.png')}
+                    style={{ width: 80, height: 80 }}
+                    resizeMode="contain"
+                  />
+                </View>
+              </View>
             </View>
+          </View>
 
-            {/* Card */}
-            <View className="bg-[#E6E6E6] rounded-3xl p-6">
-
+          {/* Formulario */}
+          <View style={{ flex: 1, paddingHorizontal: 24, marginTop: -20 }}>
+            <View style={{
+              backgroundColor: '#E6E6E6',
+              borderRadius: 30,
+              padding: 24,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 12,
+              elevation: 3
+            }}>
               {/* Email */}
-              <View className="mb-5">
-                <Text className="text-blue-900 font-semibold mb-2">
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{
+                  color: '#1e293b',
+                  fontSize: 16,
+                  fontWeight: '600',
+                  marginBottom: 8
+                }}>
                   Correo electrónico
                 </Text>
-                <View className="bg-white rounded-xl px-4 py-3 border border-gray-200">
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: 'white',
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  borderWidth: 1,
+                  borderColor: '#cbd5e1'
+                }}>
+                  <Mail size={20} color="#64748b" />
                   <TextInput
                     placeholder="Correo"
                     value={email}
                     onChangeText={setEmail}
                     autoCapitalize="none"
                     keyboardType="email-address"
-                    className="text-gray-800"
+                    style={{
+                      flex: 1,
+                      marginLeft: 12,
+                      color: '#0f172a',
+                      fontSize: 16
+                    }}
+                    placeholderTextColor="#94a3b8"
+                    selectionColor="#3B82F6"
                   />
                 </View>
               </View>
 
               {/* Password */}
-              <View className="mb-6">
-                <Text className="text-blue-900 font-semibold mb-2">
+              <View style={{ marginBottom: 30 }}>
+                <Text style={{
+                  color: '#1e293b',
+                  fontSize: 16,
+                  fontWeight: '600',
+                  marginBottom: 8
+                }}>
                   Contraseña
                 </Text>
-                <View className="bg-white rounded-xl px-4 py-3 border border-gray-200">
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: 'white',
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  borderWidth: 1,
+                  borderColor: '#cbd5e1'
+                }}>
+                  <Lock size={20} color="#64748b" />
                   <TextInput
                     placeholder="Contraseña"
                     value={password}
                     onChangeText={setPassword}
-                    secureTextEntry
-                    className="text-gray-800"
+                    secureTextEntry={!showPassword}
+                    style={{
+                      flex: 1,
+                      marginLeft: 12,
+                      color: '#0f172a',
+                      fontSize: 16
+                    }}
+                    placeholderTextColor="#94a3b8"
+                    selectionColor="#3B82F6"
                   />
+                  <Pressable
+                    onPress={() => setShowPassword(!showPassword)}
+                    style={{ padding: 4 }}
+                  >
+                    {showPassword ? (
+                      <EyeOff size={20} color="#64748b" />
+                    ) : (
+                      <Eye size={20} color="#64748b" />
+                    )}
+                  </Pressable>
                 </View>
               </View>
 
-              {/* Button */}
+              {/* Botón de Login */}
               <Pressable
                 onPress={handleLogin}
-                className="bg-blue-700 rounded-xl py-4 items-center"
+                disabled={isLoading}
+                style={{
+                  backgroundColor: '#1d4ed8',
+                  borderRadius: 12,
+                  paddingVertical: 16,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 20,
+                  shadowColor: '#1d4ed8',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 5,
+                  opacity: isLoading ? 0.7 : 1
+                }}
               >
                 {isLoading ? (
-                  <View className="flex-row items-center">
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <ActivityIndicator color="#fff" />
-                    <Text className="text-white ml-2 font-bold">
+                    <Text style={{
+                      color: 'white',
+                      fontSize: 16,
+                      fontWeight: 'bold',
+                      marginLeft: 8
+                    }}>
                       Procesando...
                     </Text>
                   </View>
                 ) : (
-                  <Text className="text-white font-bold text-lg">
+                  <Text style={{
+                    color: 'white',
+                    fontSize: 18,
+                    fontWeight: 'bold'
+                  }}>
                     Entrar
                   </Text>
                 )}
@@ -200,17 +309,28 @@ export default function Login({ navigation }: any) {
             </View>
 
             {/* Footer */}
-            <View className="items-center mt-8">
-              <Text className="text-gray-600">
+            <View style={{ alignItems: 'center', marginTop: 32 }}>
+              <Text style={{
+                color: '#64748b',
+                fontSize: 14,
+                marginBottom: 8
+              }}>
                 ¿No tienes cuenta?
               </Text>
               <Pressable onPress={() => navigation.navigate('Register')}>
-                <Text className="text-blue-700 font-bold underline">
+                <Text style={{
+                  color: '#1d4ed8',
+                  fontSize: 14,
+                  fontWeight: 'bold',
+                  textDecorationLine: 'underline'
+                }}>
                   Regístrate
                 </Text>
               </Pressable>
             </View>
 
+            {/* Espacio para el teclado */}
+            <View style={{ height: 20 }} />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

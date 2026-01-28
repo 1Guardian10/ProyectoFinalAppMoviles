@@ -1,8 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, Image } from 'react-native';
 import { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { supabase } from '../supabase/supabase';
 import { showAlert } from '../utils/AlertNativa';
+import { BarChart3 } from 'lucide-react-native';
+// ICONOS
+import {
+  Home,
+  List,
+  Package,
+  Store,
+  Shield,
+  Users,
+  Truck,
+  ShoppingBag,
+  LogOut,
+} from 'lucide-react-native';
 
 export default function DrawerContent(props: DrawerContentComponentProps) {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -19,8 +32,8 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
       try {
         const userResp: any = await supabase.auth.getUser();
         const user = userResp?.data?.user;
-        console.log('DrawerContent: supabase.auth.getUser ->', userResp);
         setUserId(user?.id ?? null);
+
         if (!user) {
           if (mounted) setIsAdmin(false);
           if (mounted) setDebugMsg('No hay usuario autenticado');
@@ -32,10 +45,10 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
           .select('rol_id')
           .eq('id', user.id)
           .single();
+
         if (uErr || !usuario) {
           if (mounted) setIsAdmin(false);
           if (mounted) setDebugMsg('No existe fila en tabla usuarios para este id');
-          console.log('DrawerContent: usuarios select error or empty', uErr, usuario);
           return;
         }
 
@@ -50,17 +63,17 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
           .eq('id', usuario.rol_id)
           .single();
 
-        console.log('DrawerContent: role query', role, rErr);
         const rname = ((role as any)?.nombre || '').toString().toLowerCase();
         if (mounted) {
           setRoleName(rname || null);
           setIsAdmin(['admin', 'administrator'].includes(rname));
           setIsClient(rname === 'cliente' || rname === 'client');
           setIsDriver(rname === 'repartidor' || rname === 'driver');
-          if (['admin', 'administrator'].includes(rname)) setDebugMsg(null);
-          else if (rname === 'cliente' || rname === 'client') setDebugMsg(null);
-          else if (rname === 'repartidor' || rname === 'driver') setDebugMsg(null);
-          else setDebugMsg("El rol del usuario no es 'admin', 'cliente' ni 'repartidor'");
+          if (['admin', 'administrator', 'cliente', 'client', 'repartidor', 'driver'].includes(rname)) {
+            setDebugMsg(null);
+          } else {
+            setDebugMsg("El rol del usuario no es 'admin', 'cliente' ni 'repartidor'");
+          }
         }
       } catch (e) {
         if (mounted) setIsAdmin(false);
@@ -69,7 +82,7 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
 
     loadRole();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, _session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
       loadRole();
     });
 
@@ -91,57 +104,122 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
     }
   };
 
+  // ITEM DEL MENÚ CON ICONO
+  const MenuItem = ({
+    title,
+    onPress,
+    icon,
+  }: {
+    title: string;
+    onPress: () => void;
+    icon: React.ReactNode;
+  }) => (
+    <Pressable
+      onPress={onPress}
+      className="flex-row items-center px-4 py-3 rounded-xl mb-2 bg-white/90 active:bg-blue-600"
+    >
+      <View className="w-8 items-center">{icon}</View>
+      <Text className="text-blue-700 text-base font-extrabold ml-2">
+        {title}
+      </Text>
+    </Pressable>
+  );
+
   return (
-    <View>
-      <Text>Menú</Text>
-      <Pressable onPress={() => props.navigation.navigate('Home')}>
-        <Text>Inicio</Text>
-      </Pressable>
-      {isAdmin && (
-        <>
-          <Pressable onPress={() => props.navigation.navigate('AdminCategorias')}>
-            <Text>Categorías (Admin)</Text>
-          </Pressable>
-          <Pressable onPress={() => props.navigation.navigate('AdminProductos')}>
-            <Text>Productos (Admin)</Text>
-          </Pressable>
-          <Pressable onPress={() => props.navigation.navigate('AdminRestaurantes')}>
-            <Text>Restaurantes (Admin)</Text>
-          </Pressable>
-          <Pressable onPress={() => props.navigation.navigate('AdminRoles')}>
-            <Text>Roles (Admin)</Text>
-          </Pressable>
-          <Pressable onPress={() => props.navigation.navigate('AdminUsuarios')}>
-            <Text>Usuarios (Admin)</Text>
-          </Pressable>
-          <Pressable onPress={() => props.navigation.navigate('RestaurantesCliente')}>
-            <Text>Restaurantes</Text>
-          </Pressable>
-          <Pressable onPress={() => props.navigation.navigate('DriverOrders')}>
-            <Text>Pedidos (Repartidor)</Text>
-          </Pressable>
-        </>
-      )}
-      {isClient && (
-        <>
-          <Pressable onPress={() => props.navigation.navigate('RestaurantesCliente')}>
-            <Text>Restaurantes</Text>
-          </Pressable>
-        </>
-      )}
-      {isDriver && (
-        <>
-          <Pressable onPress={() => props.navigation.navigate('DriverOrders')}>
-            <Text>Pedidos Disponibles</Text>
-          </Pressable>
-          <Pressable onPress={() => props.navigation.navigate('DriverActiveOrders')}>
-            <Text>Mis Pedidos (Activos)</Text>
-          </Pressable>
-        </>
-      )}
-      <Pressable onPress={handleLogout}>
-        <Text style={{ color: 'red' }}>Cerrar sesión</Text>
-      </Pressable>
+    <View className="flex-1 bg-blue-700 px-4 pt-12">
+
+      {/* HEADER */}
+      <View className="items-center mb-8">
+        <View className="w-24 h-24 rounded-full bg-white/20 items-center justify-center mb-2 overflow-hidden">
+          <Image
+            source={require('../assets/logoNavbar.png')}
+            className="w-30 h-30"
+            resizeMode="contain"
+          />
+        </View>
+
+        <Text className="text-white text-xl font-extrabold">
+          MOSHI APP
+        </Text>
+
+        {roleName && (
+          <Text className="text-blue-200 text-sm capitalize mt-1">
+            {roleName}
+          </Text>
+        )}
+      </View>
+
+      {/* MENÚ */}
+      <View className="flex-1">
+        <MenuItem
+          title="Inicio"
+          icon={<Home size={20} color="#2563EB" />}
+          onPress={() => props.navigation.navigate('Home')}
+        />
+
+        {isAdmin && (
+          <>
+            <MenuItem
+              title="Panel de Admin"
+              icon={<Shield size={20} color="#2563EB" />}
+              onPress={() => props.navigation.navigate('AdminPanel')}
+            />
+            <MenuItem
+              title="Restaurantes"
+              icon={<ShoppingBag size={20} color="#2563EB" />}
+              onPress={() => props.navigation.navigate('RestaurantesCliente')}
+            />
+          </>
+        )}
+
+        {isClient && (
+          <>
+            <MenuItem
+              title="Restaurantes"
+              icon={<ShoppingBag size={20} color="#2563EB" />}
+              onPress={() => props.navigation.navigate('RestaurantesCliente')}
+            />
+            <MenuItem
+              title="Mis Pedidos"
+              icon={<Package size={20} color="#2563EB" />}
+              onPress={() => props.navigation.navigate('ClientOrderHistory')}
+            />
+          </>
+        )}
+
+        {isDriver && (
+          <>
+            <MenuItem
+              title="Pedidos Disponibles"
+              icon={<Truck size={20} color="#2563EB" />}
+              onPress={() => props.navigation.navigate('DriverOrders')}
+            />
+            <MenuItem
+              title="Mis Pedidos Activos"
+              icon={<Package size={20} color="#2563EB" />}
+              onPress={() => props.navigation.navigate('DriverActiveOrders')}
+            />
+            <MenuItem
+              title="Finalizar Pedidos"
+              icon={<ShoppingBag size={20} color="#2563EB" />}
+              onPress={() => props.navigation.navigate('DriverCompleteOrders')}
+            />
+          </>
+        )}
+      </View>
+
+      {/* FOOTER */}
+      <View className="border-t border-blue-500 pt-4 mb-6">
+        <Pressable
+          onPress={handleLogout}
+          className="flex-row items-center justify-center px-4 py-3 rounded-xl bg-blue-600 active:bg-blue-700"
+        >
+          <LogOut size={20} color="white" />
+          <Text className="text-white text-center font-extrabold ml-2">
+            Cerrar sesión
+          </Text>
+        </Pressable>
+      </View>
     </View>
   );
 }

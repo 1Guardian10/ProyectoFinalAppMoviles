@@ -37,11 +37,13 @@ export default function Restaurantes({ navigation }: any) {
       }
       className="flex-row items-center bg-white mx-3 my-2 p-3 rounded-2xl shadow-sm border border-gray-100 active:bg-blue-50"
     >
-      <Image
-        source={require('../assets/ramen.jpg')}
-        className={`${isSmallPhone ? 'w-12 h-12' : 'w-14 h-14'} rounded-full mr-3`}
-        resizeMode="cover"
-      />
+      <View className={`${isSmallPhone ? 'w-12 h-12' : 'w-16 h-16'} rounded-full mr-3 overflow-hidden bg-gray-100`}>
+        <Image
+          source={item.imagen_url ? { uri: item.imagen_url } : require('../assets/ramen.jpg')}
+          className="w-full h-full"
+          resizeMode="cover"
+        />
+      </View>
 
       <View className="flex-1">
         <Text
@@ -78,9 +80,8 @@ export default function Restaurantes({ navigation }: any) {
         `}
       >
         <Text
-          className={`text-white font-bold ${
-            isSmallPhone ? 'text-[10px]' : 'text-xs'
-          }`}
+          className={`text-white font-bold ${isSmallPhone ? 'text-[10px]' : 'text-xs'
+            }`}
         >
           {isSmallPhone ? 'Ver →' : 'Ver productos →'}
         </Text>
@@ -92,16 +93,14 @@ export default function Restaurantes({ navigation }: any) {
     <View className="flex-1 bg-gray-50">
       {/* 🔍 Buscador mejorado - Diseño profesional */}
       <View className="mx-4 mt-6 mb-4">
-        <View className={`flex-row items-center bg-white rounded-xl px-4 py-2.5 shadow-sm border transition-all duration-200 ${
-          isFocused 
-            ? 'border-blue-500 shadow-md' 
-            : 'border-gray-200'
-        }`}>
-          
-          {/* Icono de búsqueda mejorado */}
-          <View className={`w-8 h-8 rounded-lg items-center justify-center mr-3 transition-colors duration-200 ${
-            isFocused ? 'bg-blue-50' : 'bg-gray-50'
+        <View className={`flex-row items-center bg-white rounded-xl px-4 py-2.5 shadow-sm border transition-all duration-200 ${isFocused
+          ? 'border-blue-500 shadow-md'
+          : 'border-gray-200'
           }`}>
+
+          {/* Icono de búsqueda mejorado */}
+          <View className={`w-8 h-8 rounded-lg items-center justify-center mr-3 transition-colors duration-200 ${isFocused ? 'bg-blue-50' : 'bg-gray-50'
+            }`}>
             <Text className={`text-lg ${isFocused ? 'text-blue-500' : 'text-gray-400'}`}>
               🔍
             </Text>
@@ -140,7 +139,7 @@ export default function Restaurantes({ navigation }: any) {
           <Text className="text-gray-700 font-semibold text-base">
             {filteredItems.length} {filteredItems.length === 1 ? 'local disponible' : 'locales disponibles'}
           </Text>
-          
+
           {search.length > 0 && (
             <Pressable
               onPress={() => setSearch('')}
@@ -175,8 +174,8 @@ export default function Restaurantes({ navigation }: any) {
               No encontramos resultados
             </Text>
             <Text className="text-gray-400 text-sm text-center px-8">
-              {search.length > 0 
-                ? `No hay coincidencias para "${search}"` 
+              {search.length > 0
+                ? `No hay coincidencias para "${search}"`
                 : 'No hay restaurantes disponibles en este momento'}
             </Text>
           </View>
