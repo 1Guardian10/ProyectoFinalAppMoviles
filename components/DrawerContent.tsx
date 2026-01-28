@@ -156,6 +156,11 @@ export default function DrawerContent(props: DrawerContentComponentProps) {
           icon={<Home size={20} color="#2563EB" />}
           onPress={() => props.navigation.navigate('Home')}
         />
+        <MenuItem
+          title="Mi perfil"
+          icon={<Users size={20} color="#2563EB" />}
+          onPress={() => props.navigation.navigate("Profile")}
+        />
 
         {isAdmin && (
           <>

@@ -24,7 +24,7 @@ import DriverActiveOrders from './pages/DriverActiveOrders';
 import DriverCompleteOrders from './pages/DriverCompleteOrders';
 import ClientOrderHistory from './pages/ClientOrderHistory';
 import OrdersStats from './pages/OrdersStats';
-
+import Profile from './pages/Profile';
 import AdminPanel from './pages/AdminPanel';
 
 const Stack = createNativeStackNavigator();
@@ -40,6 +40,7 @@ function MainDrawer() {
       <Drawer.Screen name="Home" component={Home} />
       <Drawer.Screen name="AdminPanel" component={AdminPanel} options={{ title: 'Panel de Admin' }} />
       <Drawer.Screen name="RestaurantesCliente" component={Restaurantes} options={{ title: 'Restaurantes' }} />
+      <Drawer.Screen name="Profile" component={Profile} options={{ title: 'Mi perfil' }} />
       <Drawer.Screen name="RestaurantProducts" component={RestaurantProducts} options={{ title: 'Productos del restaurante' }} />
       <Drawer.Screen name="DriverOrders" component={DriverOrders} options={{ title: 'Pedidos Disponibles' }} />
       <Drawer.Screen name="DriverActiveOrders" component={DriverActiveOrders} options={{ title: 'Mis Pedidos (Activos)' }} />
