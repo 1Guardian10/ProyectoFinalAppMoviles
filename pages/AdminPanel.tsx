@@ -105,18 +105,20 @@ export default function AdminPanel({ navigation }: any) {
                         {ADMIN_OPTIONS.map((option) => (
                             <TouchableOpacity
                                 key={option.id}
-                                className="w-1/2 md:w-1/3 lg:w-1/4 px-2 mb-4"
+                                className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-2 mb-4"
                                 onPress={() => navigation.navigate(option.route)}
                                 activeOpacity={0.7}
                             >
-                                <View className="bg-white rounded-[32px] p-5 shadow-lg shadow-blue-900/10 border border-gray-100 h-full flex-col items-center text-center">
-                                    <View className={`${option.bg} w-16 h-16 rounded-3xl items-center justify-center mb-4`}>
+                                <View className="bg-white rounded-[32px] p-5 shadow-lg shadow-blue-900/10 border border-gray-100 flex-row sm:flex-col items-center">
+                                    <View className={`${option.bg} w-16 h-16 rounded-3xl items-center justify-center mb-0 sm:mb-4 mr-4 sm:mr-0`}>
                                         <MaterialIcons name={option.icon as any} size={32} color={option.color} />
                                     </View>
-                                    <Text className="text-gray-900 font-bold text-lg mb-1">{option.title}</Text>
-                                    <Text className="text-gray-500 text-xs text-center leading-tight">
-                                        {option.description}
-                                    </Text>
+                                    <View className="flex-1 sm:items-center">
+                                        <Text className="text-gray-900 font-bold text-lg mb-1 sm:text-center">{option.title}</Text>
+                                        <Text className="text-gray-500 text-xs text-left sm:text-center leading-tight">
+                                            {option.description}
+                                        </Text>
+                                    </View>
                                 </View>
                             </TouchableOpacity>
                         ))}
