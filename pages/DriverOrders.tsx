@@ -12,7 +12,7 @@ import { showAlert } from '../utils/AlertNativa';
 import OrderDetailsModal from '../components/OrderDetailsModal';
 
 /* ================= TELEGRAM CONFIG ================= */
-const TOKEN = "8490432231:AAG3gXVUGcFbb74Hq3sea32o7Dr3IY8Kt6w";
+const TOKEN = process.env.EXPO_PUBLIC_TOKEN_TELEGRAM;
 
 const CHAT_IDS: string[] = [
   "5033057586",
